@@ -1,0 +1,14 @@
+{
+  "schema": {
+   "name": {type: 'string'}
+  },
+  "form": [
+    {
+      "key": "name",
+      "type": "text",
+      "autocomplete": {
+        "source": ['abc', 'bed', 'bee', 'dog', 'cat']
+      }
+    }
+  ]
+}
