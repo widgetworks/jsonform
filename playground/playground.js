@@ -114,8 +114,9 @@ $('document').ready(function () {
    * Loads and displays the example identified by the given name
    */
   var loadExample = function (example) {
+    var exampleDir = !isBootstrap2 ? '../examples/' : 'examples/';
     $.ajax({
-      url: 'examples/' + example + '.json',
+      url: exampleDir + example + '.json',
       dataType: 'text'
     }).done(function (code) {
       var aceId = $('#form .ace_editor').attr('id');
