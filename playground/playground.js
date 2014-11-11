@@ -1,57 +1,11 @@
 /*global $, ace, console*/
 $('document').ready(function () {
+  var isBootstrap2 = JSONForm.isBootstrap2 = location.pathname.indexOf('bootstrap3') < 0;
   var formObject = {
     schema: {
       example: {
         title: 'JSON Form example to start from',
         type: 'string',
-        'enum': [
-          'gettingstarted',
-          'schema-basic',
-          'schema-morecomplex',
-          'schema-array',
-          'schema-required',
-          'schema-default',
-          'schema-inline-ref',
-          'fields-common',
-          'fields-password',
-          'fields-textarea',
-          'fields-text-autocomplete',
-          'fields-ace',
-          'fields-color',
-          'fields-checkbox',
-          'fields-checkboxes',
-          'fields-select',
-          'fields-radios',
-          'fields-radiobuttons',
-          'fields-checkboxbuttons',
-          'fields-range',
-          'fields-imageselect',
-          'fields-iconselect',
-          'fields-fieldset',
-          'fields-advancedfieldset',
-          'fields-authfieldset',
-          'fields-section',
-          'fields-actions',
-          'fields-array',
-          'fields-tabarray',
-          'fields-tabarray-maxitems',
-          'fields-tabarray-value',
-          'fields-selectfieldset',
-          'fields-selectfieldset-key',
-          'fields-submit',
-          'fields-help',
-          'fields-hidden',
-          'fields-questions',
-          'templating-idx',
-          'templating-value',
-          'templating-values',
-          'templating-tpldata',
-          'events',
-          'previousvalues',
-          'previousvalues-multi-array',
-          'factory-sleek'
-        ],
         'default': 'gettingstarted'
       },
       greatform: {
@@ -65,7 +19,8 @@ $('document').ready(function () {
         notitle: true,
         prepend: 'Try with',
         htmlClass: 'trywith',
-        titleMap: {
+        type: 'select',
+        options: {
           'gettingstarted': 'Getting started',
           'schema-basic': 'JSON Schema - A basic example',
           'schema-morecomplex': 'JSON Schema - Slightly more complex example',
@@ -84,7 +39,7 @@ $('document').ready(function () {
           'fields-select': 'Fields - Selection list: the select type',
           'fields-radios': 'Fields - A list of radio buttons: the radios type',
           'fields-radiobuttons': 'Fields - Radio buttons as real buttons: the radio buttons type',
-          'fields-checkboxbuttons': 'Fields - Checkbox buttons as real buttons: the checkbox buttons type',
+          'fields-checkboxbuttons': 'Fields - Checkbox buttons: the checkbox buttons type',
           'fields-range': 'Fields - Number: the range type',
           'fields-imageselect': 'Fields - Image selector: the imageselect type',
           'fields-iconselect': 'Fields - Icon selector: the iconselect type',
