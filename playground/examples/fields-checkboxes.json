@@ -13,12 +13,38 @@
           "dessert"
         ]
       }
+    },
+    "menu2": {
+      "type": "array",
+      "title": "Options",
+      "items": {
+        "type": "string",
+        "title": "Option",
+        "enum": [
+          "starter",
+          "maincourse",
+          "cheese",
+          "dessert"
+        ]
+      }
     }
   },
   "form": [
     {
       "key": "menu",
       "type": "checkboxes",
+      "titleMap": {
+        "starter": "Starter would be great",
+        "maincourse": "No way I'll skip the main course",
+        "cheese": "Cheddar rules!",
+        "dessert": "Thumbs up for a dessert"
+      }
+    },
+    {
+      "key": "menu2",
+      "type": "checkboxes",
+      "title": "Options inline style",
+      "inline": true,
       "titleMap": {
         "starter": "Starter would be great",
         "maincourse": "No way I'll skip the main course",
