@@ -79,7 +79,7 @@
         "cheese": "Cheddar rules!",
         "dessert": "Thumbs up for a dessert"
       },
-      "otherField": {"key": "menu3[4]", "type": "text", "asArrayValue": true}
+      "otherField": {"key": "menu3[99]", "type": "text", "asArrayValue": true}
     },
     {
       "type": "submit",
