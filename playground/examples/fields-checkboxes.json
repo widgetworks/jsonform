@@ -27,6 +27,7 @@
           "enum": [
             "starter",
             "maincourse",
+            "CUSTOME_OTHER_VALUE",
             "cheese",
             "dessert"
           ]
@@ -67,7 +68,7 @@
         "cheese": "Cheddar rules!",
         "dessert": "Thumbs up for a dessert"
       },
-      "otherField": {"key": "menu2Other", "inline": true}
+      "otherField": {"key": "menu2Other", "inline": true, "otherValue": "CUSTOME_OTHER_VALUE"}
     },
     {
       "key": "menu3",
@@ -78,7 +79,7 @@
         "cheese": "Cheddar rules!",
         "dessert": "Thumbs up for a dessert"
       },
-      "otherField": {"key": "menu3[4]", "type": "text", "novalue": true}
+      "otherField": {"key": "menu3[4]", "type": "text", "asArrayValue": true}
     },
     {
       "type": "submit",
