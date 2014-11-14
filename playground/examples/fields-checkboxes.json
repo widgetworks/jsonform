@@ -1,31 +1,46 @@
 {
   "schema": {
-    "menu": {
-      "type": "array",
-      "title": "Options",
-      "items": {
-        "type": "string",
-        "title": "Option",
-        "enum": [
-          "starter",
-          "maincourse",
-          "cheese",
-          "dessert"
-        ]
-      }
-    },
-    "menu2": {
-      "type": "array",
-      "title": "Options",
-      "items": {
-        "type": "string",
-        "title": "Option",
-        "enum": [
-          "starter",
-          "maincourse",
-          "cheese",
-          "dessert"
-        ]
+    "properties": {
+      "menu": {
+        "type": "array",
+        "title": "Options",
+        "items": {
+          "type": "string",
+          "title": "Option",
+          "enum": [
+            "starter",
+            "maincourse",
+            "cheese",
+            "dessert",
+            "OTHER"
+          ]
+        },
+        "minItems": 1
+      },
+      "menuOther": {"type": "string"},
+      "menu2": {
+        "type": "array",
+        "title": "Options Inline",
+        "items": {
+          "type": "string",
+          "title": "Option",
+          "enum": [
+            "starter",
+            "maincourse",
+            "cheese",
+            "dessert"
+          ]
+        }
+      },
+      "menu2Other": {"type": "string"},
+      "menu3": {
+        "type": "array",
+        "title": "Options",
+        "description": "Other field's value as an element of result array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1
       }
     }
   },
@@ -38,7 +53,8 @@
         "maincourse": "No way I'll skip the main course",
         "cheese": "Cheddar rules!",
         "dessert": "Thumbs up for a dessert"
-      }
+      },
+      "otherField": {"key": "menuOther", "inline": true}
     },
     {
       "key": "menu2",
@@ -50,7 +66,19 @@
         "maincourse": "No way I'll skip the main course",
         "cheese": "Cheddar rules!",
         "dessert": "Thumbs up for a dessert"
-      }
+      },
+      "otherField": {"key": "menu2Other", "inline": true}
+    },
+    {
+      "key": "menu3",
+      "type": "checkboxes",
+      "options": {
+        "starter": "Starter would be great",
+        "maincourse": "No way I'll skip the main course",
+        "cheese": "Cheddar rules!",
+        "dessert": "Thumbs up for a dessert"
+      },
+      "otherField": {"key": "menu3[4]", "type": "text", "novalue": true}
     },
     {
       "type": "submit",
