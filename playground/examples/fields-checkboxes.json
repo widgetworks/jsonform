@@ -68,7 +68,7 @@
         "cheese": "Cheddar rules!",
         "dessert": "Thumbs up for a dessert"
       },
-      "otherField": {"key": "menu2Other", "otherValue": "CUSTOME_OTHER_VALUE"}
+      "otherField": {"key": "menu2Other", "title": "Custom other field title", "otherValue": "CUSTOME_OTHER_VALUE"}
     },
     {
       "key": "menu3",
