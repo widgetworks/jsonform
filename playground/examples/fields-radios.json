@@ -27,7 +27,10 @@
     {
       "key": "fantastic",
       "type": "radios",
-      "inline": true
+      "inline": true,
+      "toggleNextMap": {
+        "true": true
+      }
     },
     {
       "key": "cool",
