@@ -45,9 +45,9 @@
       }
     }
   },
-  "form": [
-    {
-      "key": "menu",
+  "nonDefaultFormItems": ["menuOther", "menu2Other"],
+  "customFormItems": {
+    "menu": {
       "type": "checkboxes",
       "titleMap": {
         "starter": "Starter would be great",
@@ -57,8 +57,7 @@
       },
       "otherField": {"key": "menuOther", "inline": true}
     },
-    {
-      "key": "menu2",
+    "menu2": {
       "type": "checkboxes",
       "title": "Options inline style",
       "inline": true,
@@ -70,8 +69,7 @@
       },
       "otherField": {"key": "menu2Other", "title": "Custom other field title", "otherValue": "CUSTOME_OTHER_VALUE"}
     },
-    {
-      "key": "menu3",
+    "menu3": {
       "type": "checkboxes",
       "options": {
         "starter": "Starter would be great",
@@ -80,10 +78,6 @@
         "dessert": "Thumbs up for a dessert"
       },
       "otherField": {"key": "menu3[99]", "type": "text", "asArrayValue": true}
-    },
-    {
-      "type": "submit",
-      "title": "Submit"
     }
-  ]
+  }
 }
