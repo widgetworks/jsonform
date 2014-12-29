@@ -1,12 +1,26 @@
 {
   "schema": {
-   "name": {type: 'string'}
+    "name": {
+      title: 'Name',
+      type: 'string'
+    },
+    "nick": {
+      title: 'Nick name',
+      type: 'string'
+    },
   },
   "form": [
     {
       "key": "name",
       "type": "text",
       "autocomplete": {
+        "source": ['abc', 'bed', 'bee', 'dog', 'cat']
+      }
+    },
+    {
+      "key": "nick",
+      "type": "text",
+      "typeahead": {
         "source": ['abc', 'bed', 'bee', 'dog', 'cat']
       }
     }
