@@ -12,6 +12,14 @@
       title: 'Title',
       type: 'string'
     },
+    "tags": {
+      title: 'Tags',
+      type: 'array',
+      items: {
+        type: 'string'
+      },
+      "default": ["abc", "def"]
+    },
   },
   "customFormItems": {
     "name": {
@@ -28,6 +36,14 @@
     },
     "title": {
       "type": "text",
+      "tagsinput": {
+        "typeahead": {
+          "source": ['abc', 'bed', 'bee', 'dog', 'cat']
+        }
+      }
+    },
+    "tags": {
+      "type": "tagsinput",
       "tagsinput": {
         "typeahead": {
           "source": ['abc', 'bed', 'bee', 'dog', 'cat']
