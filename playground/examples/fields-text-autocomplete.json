@@ -8,21 +8,31 @@
       title: 'Nick name',
       type: 'string'
     },
+    "title": {
+      title: 'Title',
+      type: 'string'
+    },
   },
-  "form": [
-    {
-      "key": "name",
+  "customFormItems": {
+    "name": {
       "type": "text",
       "autocomplete": {
         "source": ['abc', 'bed', 'bee', 'dog', 'cat']
       }
     },
-    {
-      "key": "nick",
+    "nick": {
       "type": "text",
       "typeahead": {
         "source": ['abc', 'bed', 'bee', 'dog', 'cat']
       }
+    },
+    "title": {
+      "type": "text",
+      "tagsinput": {
+        "typeahead": {
+          "source": ['abc', 'bed', 'bee', 'dog', 'cat']
+        }
+      }
     }
-  ]
+  }
 }
