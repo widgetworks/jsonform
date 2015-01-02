@@ -121,7 +121,13 @@
         return;
 
       // register item in internal array and map
-      self.itemsArray.push(item);
+      var index = self.findInputWrapper().index();
+      if (index >= 0 && index < self.itemsArray.length) {
+        self.itemsArray.splice(index, 0, item);
+      } else {
+        index = -1; // use push later for the last position insertion
+        self.itemsArray.push(item);
+      }
 
       // add a tag element
       var $tag = $('<span class="tag ' + htmlEncode(tagClass) + '">' + htmlEncode(itemText) + '<span data-role="remove"></span></span>');
@@ -130,11 +136,24 @@
       $tag.after(' ');
 
       // add <option /> if item represents a value not present in one of the <select />'s options
-      if (self.isSelect && !$('option[value="' + encodeURIComponent(itemValue) + '"]',self.$element)[0]) {
-        var $option = $('<option selected>' + htmlEncode(itemText) + '</option>');
-        $option.data('item', item);
-        $option.attr('value', itemValue);
-        self.$element.append($option);
+      if (self.isSelect) {
+        var $option = $('option[value="' + itemValue + '"]',self.$element);
+        if ($option.length == 0) {
+          $option = $('<option selected>' + htmlEncode(itemText) + '</option>');
+          $option.data('item', item);
+          $option.attr('value', itemValue);
+          if (index >= 0)
+            self.$element.find('option:selected').eq(index).before($option);
+          else
+            self.$element.append($option);
+        }
+        else {
+          if (index >= 0)
+            self.$element.find('option:selected').eq(index).before($option);
+          else
+            self.$element.append($option);
+          $option.prop('selected', true);
+        }
       }
 
       if (!dontPushVal)
