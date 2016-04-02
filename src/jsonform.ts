@@ -32,12 +32,16 @@ namespace jsonform {
     // Globals that are required for jsonform to run
     var serverside = (typeof exports !== 'undefined');
     var global = (typeof exports !== 'undefined') ? exports : window;
-    var $ = (typeof jQuery !== 'undefined') ? jQuery : { fn: {} };
-    var _ = (typeof _ !== 'undefined') ? _ : null;
+    var $ = (typeof global.jQuery !== 'undefined') ? global.jQuery : { fn: {} };
+    var _ = (typeof global._ !== 'undefined') ? global._ : null;
     
     // Don't try to load underscore.js if is already loaded
-    if (serverside && !_) {
-        _ = require('underscore');
+    if (!_) {
+        if (serverside){
+            _ = require('underscore');
+        } else {
+            throw new Error('Missing required underscore/lodash dependency');
+        }
     }
     
     export var isBootstrap2 = false;
