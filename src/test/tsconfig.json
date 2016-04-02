@@ -1,0 +1,13 @@
+{
+	"disabledOptions": {
+	    "inlineSourceMap": true,
+		"inlineSources": true
+	},
+	"compilerOptions": {
+		"inlineSourceMap": true,
+		"inlineSources": true,
+        "outDir": "../../build/test",
+		"rootDir": ".",
+		"target": "es5"
+	}
+}

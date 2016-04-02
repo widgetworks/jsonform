@@ -1,6 +1,5 @@
 declare var _: any;
 declare var exports: any;
-declare var jQuery: any;
 declare var require: any;
 
 interface Window {

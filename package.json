@@ -6,10 +6,13 @@
   "domain": "joshfire.com",
   "description": "Client-side JavaScript library that generates HTML forms from structured data models expressed using a JSON schema, possibly completed by a form layout description.",
   "scripts": {
-      "serve": "http-server",
+    "serve": "http-server",
     "clean": "rm -r build/*",
     "ts": "tsc -p src/tsconfig.json",
-    "tsw": "tsc -p src/tsconfig.json --watch"
+    "tsw": "tsc -p src/tsconfig.json --watch",
+    "testw": "tsc -p src/test/tsconfig.json --watch",
+    "karma": "karma start",
+    "test": "npm run testw & npm run karma"
   },
   "keywords": [
     "JSON",
@@ -24,14 +27,15 @@
       "web": "http://www.joshfire.com"
     }
   ],
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "LICENSE"
-    }
-  ],
+  "license": "MIT",
   "devDependencies": {
     "http-server": "^0.9.0",
+    "jasmine-core": "^2.4.1",
+    "jasmine-jquery": "^2.1.1",
+    "karma": "^0.13.22",
+    "karma-chrome-launcher": "^0.2.3",
+    "karma-growl-reporter": "^0.1.1",
+    "karma-jasmine": "^0.3.8",
     "typescript": "^1.8.9"
   }
 }
