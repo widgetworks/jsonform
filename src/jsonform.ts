@@ -24,47 +24,53 @@
 
  /*global window*/
  
-namespace jsonutil {
+/**
+ * The jsonform object whose methods will be exposed to the window object
+ */
+namespace jsonform {
+    
+    // Globals that are required for jsonform to run
+    var serverside = (typeof exports !== 'undefined');
+    var global = (typeof exports !== 'undefined') ? exports : window;
+    var $ = (typeof jQuery !== 'undefined') ? jQuery : { fn: {} };
+    var _ = (typeof _ !== 'undefined') ? _ : null;
+    
+    // Don't try to load underscore.js if is already loaded
+    if (serverside && !_) {
+        _ = require('underscore');
+    }
+    
+    export var isBootstrap2 = false;
 
-(function(serverside, global, $, _, JSON) {
-  // Don't try to load underscore.js if is already loaded
-  if (serverside && !_) {
-    _ = require('underscore');
-  }
-
-  var getDefaultClasses = function(isBootstrap2) {
-    return isBootstrap2 ? {
-      groupClass: 'control-group',
-      groupMarkClassPrefix: '',
-      labelClass: 'control-label',
-      controlClass: 'controls',
-      iconClassPrefix: 'icon',
-      buttonClass: 'btn',
-      textualInputClass: '',
-      prependClass: 'input-prepend',
-      appendClass: 'input-append',
-      addonClass: 'add-on',
-      inlineClassSuffix: ' inline'
-    } : {
-      groupClass: 'form-group',
-      groupMarkClassPrefix: 'has-',
-      labelClass: 'control-label',
-      controlClass: 'controls',
-      iconClassPrefix: 'glyphicon glyphicon',
-      buttonClass: 'btn btn-default',
-      textualInputClass: 'form-control',
-      prependClass: 'input-group',
-      appendClass: 'input-group',
-      addonClass: 'input-group-addon',
-      buttonAddonClass: 'input-group-btn',
-      inlineClassSuffix: '-inline'
+    export function getDefaultClasses(isBootstrap2): IFormClasses {
+        return isBootstrap2 ? {
+            groupClass: 'control-group',
+            groupMarkClassPrefix: '',
+            labelClass: 'control-label',
+            controlClass: 'controls',
+            iconClassPrefix: 'icon',
+            buttonClass: 'btn',
+            textualInputClass: '',
+            prependClass: 'input-prepend',
+            appendClass: 'input-append',
+            addonClass: 'add-on',
+            buttonAddonClass: '',
+            inlineClassSuffix: ' inline'
+        } : {
+                groupClass: 'form-group',
+                groupMarkClassPrefix: 'has-',
+                labelClass: 'control-label',
+                controlClass: 'controls',
+                iconClassPrefix: 'glyphicon glyphicon',
+                buttonClass: 'btn btn-default',
+                textualInputClass: 'form-control',
+                prependClass: 'input-group',
+                appendClass: 'input-group',
+                addonClass: 'input-group-addon',
+                buttonAddonClass: 'input-group-btn',
+                inlineClassSuffix: '-inline'
+            };
     };
-  };
-
-  /**
-   * Regular expressions used to extract array indexes in input field names
-   */
-  var reArray = /\[([0-9]*)\](?=\[|\.|$)/g;
 
   /**
    * Template settings for form views
@@ -99,11 +105,6 @@ namespace jsonutil {
   var hasOwnProperty = function (obj, prop) {
     return typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, prop);
   }
-
-  /**
-   * The jsonform object whose methods will be exposed to the window object
-   */
-  var jsonform = {util:{}};
 
 
   // From backbonejs
@@ -247,7 +248,7 @@ var initializeTabs = function (tabs, options) {
 
 
 // Twitter bootstrap-friendly HTML boilerplate for standard inputs
-jsonform.fieldTemplate = function(inner) {
+export function fieldTemplate(inner: string) {
   return '<div class="<%= cls.groupClass %> jsonform-node jsonform-error-<%= keydash %>' +
     '<%= elt.htmlClass ? " " + elt.htmlClass : "" %>' +
     '<%= (node.required && node.formElement && (node.formElement.type !== "checkbox") ? " jsonform-required" : "") %>' +
@@ -302,7 +303,7 @@ var fileDisplayTemplate = '<div class="_jsonform-preview">' +
   '</div>' +
   '<a href="#" class="<%= cls.buttonClass %> _jsonform-delete"><i class="<%= cls.iconClassPrefix %>-remove" title="Remove"></i></a> ';
 
-var inputFieldTemplate = function (type, isTextualInput, extraOpts) {
+var inputFieldTemplate = function (type: string, isTextualInput: boolean, extraOpts?: any) {
   var templ = {
     'template': '<input type="' + type + '" ' +
       'class="<%= fieldHtmlClass' + (isTextualInput ? ' || cls.textualInputClass' : '') + ' %>" ' +
@@ -368,7 +369,7 @@ var inputFieldTemplate = function (type, isTextualInput, extraOpts) {
   return templ;
 };
 
-var numberFieldTemplate = function (type, isTextualInput) {
+var numberFieldTemplate = function (type: string, isTextualInput = false) {
   return {
     'template': '<input type="' + type + '" ' +
       'class="<%= fieldHtmlClass' + (isTextualInput ? ' || cls.textualInputClass' : '') + ' %>" ' +
@@ -420,7 +421,7 @@ var numberFieldTemplate = function (type, isTextualInput) {
   };
 }
 
-jsonform.elementTypes = {
+export var elementTypes = {
   'none': {
     'template': ''
   },
@@ -1433,13 +1434,13 @@ jsonform.elementTypes = {
 
 
       // Refreshes the list of tabs
-      var updateTabs = function (selIdx) {
+      var updateTabs = function (selIdx?: number) {
         var tabs = '';
         var activateFirstTab = false;
         if (selIdx === undefined) {
           selIdx = $('> .tabbable > .nav-tabs .active', $nodeid).data('idx');
           if (selIdx) {
-            selIdx = parseInt(selIdx, 10);
+            selIdx = parseInt(<any>selIdx, 10);
           }
           else {
             activateFirstTab = true;
@@ -1846,190 +1847,6 @@ jsonform.elementTypes = {
 };
 
 
-//Allow to access subproperties by splitting "."
-/**
- * Retrieves the key identified by a path selector in the structured object.
- *
- * Levels in the path are separated by a dot. Array items are marked
- * with [x]. For instance:
- *  foo.bar[3].baz
- *
- * @function
- * @param {Object} obj Structured object to parse
- * @param {String} key Path to the key to retrieve
- * @param {boolean} ignoreArrays True to use first element in an array when
- *   stucked on a property. This parameter is basically only useful when
- *   parsing a JSON schema for which the "items" property may either be an
- *   object or an array with one object (only one because JSON form does not
- *   support mix of items for arrays).
- * @return {Object} The key's value.
- */
-jsonform.util.getObjKey = function (obj, key, ignoreArrays) {
-  var innerobj = obj;
-  var keyparts = key.split(".");
-  var subkey = null;
-  var arrayMatch = null;
-  var prop = null;
-
-  for (var i = 0; i < keyparts.length; i++) {
-    if ((innerobj === null) || (typeof innerobj !== "object")) return null;
-    subkey = keyparts[i];
-    prop = subkey.replace(reArray, '');
-    reArray.lastIndex = 0;
-    arrayMatch = reArray.exec(subkey);
-    if (arrayMatch) {
-      innerobj = innerobj[prop];
-      while (true) {
-        if (!_.isArray(innerobj)) return null;
-        innerobj = innerobj[parseInt(arrayMatch[1], 10)];
-        arrayMatch = reArray.exec(subkey);
-        if (!arrayMatch) break;
-      }
-    }
-    else if (ignoreArrays &&
-        !innerobj[prop] &&
-        _.isArray(innerobj) &&
-        innerobj[0]) {
-      innerobj = innerobj[0][prop];
-    }
-    else {
-      innerobj = innerobj[prop];
-    }
-  }
-
-  if (ignoreArrays && _.isArray(innerobj) && innerobj[0]) {
-    return innerobj[0];
-  }
-  else {
-    return innerobj;
-  }
-};
-
-//Allow to access subproperties by splitting "."
-/**
- * Retrieves the key identified by a path selector in the structured object.
- *
- * Levels in the path are separated by a dot. Array items are marked
- * with [x]. For instance:
- *  foo.bar[3].baz
- *
- * @function
- * @param {Object} obj Structured object to parse, can be array too
- * @param {String} key Path to the key to retrieve
- * @return {Object} The key's value.
- */
-jsonform.util.getObjKeyEx = function (obj, key, objKey) {
-  var innerobj = obj;
-
-  if (key === null || key === undefined || key === '')
-    return obj;
-
-  if (typeof objKey === 'string' && objKey.length > 0) {
-    if (key.slice(0, objKey.length) !== objKey) {
-      console.log([objKey, obj, key]);
-      throw new Error('key [' + key + '] does not match the objKey [' + objKey + ']');
-    }
-    key = key.slice(objKey.length);
-    if (key[0] === '.')
-      key = key.slice(1);
-  }
-
-  var m = key.match(/^((([^\\\[.]|\\.)+)|\[(\d+)\])\.?(.*)$/);
-  if (!m)
-    throw new Error('bad format key: ' + key);
-
-  if (typeof m[2] === 'string' && m[2].length > 0) {
-    innerobj = innerobj[m[2]];
-  }
-  else if (typeof m[4] === 'string' && m[4].length > 0) {
-    innerobj = innerobj[Number(m[4])];
-  }
-  else
-    throw new Error('impossible reach here');
-  if (innerobj && m[5].length > 0)
-    innerobj = this.getObjKeyEx(innerobj, m[5]);
-
-  return innerobj;
-};
-
-
-/**
- * Sets the key identified by a path selector to the given value.
- *
- * Levels in the path are separated by a dot. Array items are marked
- * with [x]. For instance:
- *  foo.bar[3].baz
- *
- * The hierarchy is automatically created if it does not exist yet.
- *
- * @function
- * @param {Object} obj The object to build
- * @param {String} key The path to the key to set where each level
- *  is separated by a dot, and array items are flagged with [x].
- * @param {Object} value The value to set, may be of any type.
- */
-jsonform.util.setObjKey = function(obj,key,value) {
-  var innerobj = obj;
-  var keyparts = key.split(".");
-  var subkey = null;
-  var arrayMatch = null;
-  var prop = null;
-
-  for (var i = 0; i < keyparts.length-1; i++) {
-    subkey = keyparts[i];
-    prop = subkey.replace(reArray, '');
-    reArray.lastIndex = 0;
-    arrayMatch = reArray.exec(subkey);
-    if (arrayMatch) {
-      // Subkey is part of an array
-      while (true) {
-        if (!_.isArray(innerobj[prop])) {
-          innerobj[prop] = [];
-        }
-        innerobj = innerobj[prop];
-        prop = parseInt(arrayMatch[1], 10);
-        arrayMatch = reArray.exec(subkey);
-        if (!arrayMatch) break;
-      }
-      if ((typeof innerobj[prop] !== 'object') ||
-        (innerobj[prop] === null)) {
-        innerobj[prop] = {};
-      }
-      innerobj = innerobj[prop];
-    }
-    else {
-      // "Normal" subkey
-      if ((typeof innerobj[prop] !== 'object') ||
-        (innerobj[prop] === null)) {
-        innerobj[prop] = {};
-      }
-      innerobj = innerobj[prop];
-    }
-  }
-
-  // Set the final value
-  subkey = keyparts[keyparts.length - 1];
-  prop = subkey.replace(reArray, '');
-  reArray.lastIndex = 0;
-  arrayMatch = reArray.exec(subkey);
-  if (arrayMatch) {
-    while (true) {
-      if (!_.isArray(innerobj[prop])) {
-        innerobj[prop] = [];
-      }
-      innerobj = innerobj[prop];
-      prop = parseInt(arrayMatch[1], 10);
-      arrayMatch = reArray.exec(subkey);
-      if (!arrayMatch) break;
-    }
-    innerobj[prop] = value;
-  }
-  else {
-    innerobj[prop] = value;
-  }
-};
-
-
 /**
  * Retrieves the key definition from the given schema.
  *
@@ -2172,7 +1989,7 @@ var applyArrayPath = function (key, arrayPath) {
   var depth = 0;
   if (!key) return null;
   if (!arrayPath || (arrayPath.length === 0)) return key;
-  var newKey = key.replace(reArray, function (str, p1) {
+  var newKey = key.replace(jsonform.util.reArray, function (str, p1) {
     // Note this function gets called as many times as there are [x] in the ID,
     // from left to right in the string. The goal is to replace the [x] with
     // the appropriate index in the new array path, if defined.
@@ -2657,6 +2474,7 @@ formNode.prototype.getChildTemplate = function () {
       //
       // The initial values set the initial number of items in the array.
       // Note a form element contains at least one item when it is rendered.
+      var key;
       if (this.formElement.items) {
         key = this.formElement.items[0] || this.formElement.items;
       }
@@ -3262,7 +3080,7 @@ formNode.prototype.updateElement = function (domNode) {
  * @function
  */
 formNode.prototype.generate = function () {
-  var data = {
+  var data: IRenderData = {
     id: this.id,
     keydash: this.keydash,
     elt: this.formElement,
@@ -3270,7 +3088,10 @@ formNode.prototype.generate = function () {
     node: this,
     value: isSet(this.value) ? this.value : '',
     cls: this.ownerTree.defaultClasses,
-    escape: escapeHTML
+    escape: escapeHTML,
+    
+    children: '',
+    fieldHtmlClass: ''
   };
   var template = null;
   var html = '';
@@ -3576,7 +3397,7 @@ formNode.prototype.getArrayBoundaries = function () {
 
   if (!this.view || !this.view.array) return boundaries;
 
-  var getNodeBoundaries = function (node, initialNode) {
+  var getNodeBoundaries = function (node, initialNode?) {
     var schemaKey = null;
     var arrayKey = null;
     var boundaries = {
@@ -3698,8 +3519,8 @@ formTree.prototype.initialize = function (formDesc) {
   // (note clone returns a shallow copy, only first-level is cloned)
   this.formDesc = _.clone(formDesc);
 
-  jsonform.defaultClasses = getDefaultClasses(this.formDesc.isBootstrap2 || jsonform.isBootstrap2);
-  this.defaultClasses = _.clone(jsonform.defaultClasses);
+  var defaultClasses: IFormClasses = getDefaultClasses(this.formDesc.isBootstrap2 || jsonform.isBootstrap2);
+  this.defaultClasses = _.clone(defaultClasses);
   if (this.formDesc.defaultClasses)
     _.extend(this.defaultClasses, this.formDesc.defaultClasses);
 
@@ -4014,7 +3835,7 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
       }
     }
 
-    function prepareOptions(formElement, enumValues) {
+    function prepareOptions(formElement, enumValues?) {
       if (formElement.options) {
         if (Array.isArray(formElement.options)) {
           formElement.options = formElement.options.map(function(value) {
@@ -4245,12 +4066,12 @@ formTree.prototype.forEachElement = function (callback) {
 formTree.prototype.validate = function(noErrorDisplay) {
 
   var values = jsonform.getFormValue(this.domRoot);
-  var errors = false;
+  var errors: any = false;
 
   var options = this.formDesc;
 
   if (options.validate!==false) {
-    var validator = false;
+    var validator: any = false;
     if (typeof options.validate!="object") {
       if (global.ZSchema) {
         validator = new global.ZSchema();
@@ -4364,7 +4185,7 @@ formTree.prototype.hasRequiredField = function () {
  * @return {Object} The object that follows the data schema and matches the
  *  values entered by the user.
  */
-jsonform.getFormValue = function (formelt) {
+export function getFormValue(formelt) {
   var form = $(formelt).data('jsonform-tree');
   if (!form) return null;
   return form.root.getFormValues();
@@ -4388,7 +4209,7 @@ $.fn.jsonFormErrors = function(errors, options) {
   $(".jsonform-errortext", this).hide();
   if (!errors) return;
 
-  var errorSelectors = [];
+  var errorSelectors: string[] = [];
   for (var i = 0; i < errors.length; i++) {
     // Compute the address of the input field in the form from the URI
     // returned by the JSON schema validator.
@@ -4429,8 +4250,8 @@ $.fn.jsonFormErrors = function(errors, options) {
 
   // Look for the first error in the DOM and ensure the element
   // is visible so that the user understands that something went wrong
-  errorSelectors = errorSelectors.join(',');
-  var $errorSelectors = $(errorSelectors, this);
+  var errorSelectorsStr: string = errorSelectors.join(',');
+  var $errorSelectors = $(errorSelectorsStr, this);
   // XXX: check invisible panels if error happens there
   var $errorInvisiblePanels = $errorSelectors.parents('.tab-pane');
   var $errorTabs = $();
@@ -4558,11 +4379,5 @@ $.fn.jsonFormValue = function() {
 if (!global.JSONForm) {
   global.JSONForm = jsonform;
 }
-
-})((typeof exports !== 'undefined'),
-  ((typeof exports !== 'undefined') ? exports : window),
-  ((typeof jQuery !== 'undefined') ? jQuery : { fn: {} }),
-  ((typeof _ !== 'undefined') ? _ : null),
-  JSON);
 
 }
