@@ -1,10 +1,14 @@
 {
-  "name" : "json-form",
-  "version" : "1.0.0",
-  "main" : "./lib/jsonform.js",
-  "user" : "Joshfire",
+  "name": "json-form",
+  "version": "1.0.0",
+  "main": "./lib/jsonform.js",
+  "user": "Joshfire",
   "domain": "joshfire.com",
   "description": "Client-side JavaScript library that generates HTML forms from structured data models expressed using a JSON schema, possibly completed by a form layout description.",
+  "scripts": {
+    "ts": "tsc -p src/tsconfig.json",
+    "tsw": "tsc -p src/tsconfig.json --watch"
+  },
   "keywords": [
     "JSON",
     "schema",
@@ -15,13 +19,16 @@
     {
       "name": "Joshfire",
       "email": "contact@joshfire.com",
-      "web": "http://www.joshfire.com" 
-    } 
+      "web": "http://www.joshfire.com"
+    }
   ],
   "licenses": [
     {
       "type": "MIT",
       "url": "LICENSE"
     }
-  ]
+  ],
+  "devDependencies": {
+    "typescript": "^1.8.9"
+  }
 }
