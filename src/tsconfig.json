@@ -1,14 +1,22 @@
 {
 	"disabledOptions": {
 	    "inlineSourceMap": true,
-		"inlineSources": true
+		"inlineSources": true,
+        "outDir": "../build"
 	},
 	"compilerOptions": {
 		"sourceMap": true,
 	    "inlineSources": true,
 		"declaration": true,
-		"outDir": "../build",
+        "outFile": "../build/jsonform.js",
 		"rootDir": ".",
 		"target": "es5"
-	}
+	},
+    "files": [
+        "jsonform-types.ts",
+        "jsonform-util.ts",
+        "jsonform-templates.ts",
+        "jsonform.ts",
+        "references.d.ts"
+    ]
 }

@@ -6,6 +6,8 @@
   "domain": "joshfire.com",
   "description": "Client-side JavaScript library that generates HTML forms from structured data models expressed using a JSON schema, possibly completed by a form layout description.",
   "scripts": {
+      "serve": "http-server",
+    "clean": "rm -r build/*",
     "ts": "tsc -p src/tsconfig.json",
     "tsw": "tsc -p src/tsconfig.json --watch"
   },
@@ -29,6 +31,7 @@
     }
   ],
   "devDependencies": {
+    "http-server": "^0.9.0",
     "typescript": "^1.8.9"
   }
 }
