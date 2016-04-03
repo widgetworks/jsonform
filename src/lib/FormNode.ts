@@ -229,7 +229,7 @@ namespace jsonform {
      *
      * @class
      */
-    export var formNode = function() {
+    export function formNode() {
         /**
          * The node's ID (may not be set)
          */
@@ -268,7 +268,7 @@ namespace jsonform {
         /**
          * Node's subtree (if one is defined)
          */
-        this.children = [];
+        this.children/*: formNode[]*/ = [];
 
         /**
          * A pointer to the form tree the node is attached to

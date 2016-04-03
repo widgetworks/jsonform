@@ -310,87 +310,89 @@ $.fn.jsonFormErrors = function(errors, options) {
 };
 
 
-/**
- * Generates the HTML form from the given JSON Form object and renders the form.
- *
- * Main entry point of the library. Defined as a jQuery function that typically
- * needs to be applied to a <form> element in the document.
- *
- * The function handles the following properties for the JSON Form object it
- * receives as parameter:
- * - schema (required): The JSON Schema that describes the form to render
- * - form: The options form layout description, overrides default layout
- * - prefix: String to use to prefix computed IDs. Default is an empty string.
- *  Use this option if JSON Form is used multiple times in an application with
- *  schemas that have overlapping parameter names to avoid running into multiple
- *  IDs issues. Default value is "jsonform-[counter]".
- * - transloadit: Transloadit parameters when transloadit is used
- * - validate: Validates form against schema upon submission. Uses the value
- * of the "validate" property as validator if it is an object.
- * - displayErrors: Function to call with errors upon form submission.
- *  Default is to render the errors next to the input fields.
- * - submitEvent: Name of the form submission event to bind to.
- *  Default is "submit". Set this option to false to avoid event binding.
- * - onSubmit: Callback function to call when form is submitted
- * - onSubmitValid: Callback function to call when form is submitted without
- *  errors.
- *
- * @function
- * @param {Object} options The JSON Form object to use as basis for the form
- */
-$.fn.jsonForm = function(options, param1) {
-  if (options === 'values') {
-    return jsonform.getFormValue(this);
-  }
-  if (options === 'submit') {
-    var form = this.data('jsonform-tree');
-    if (!form) return null;
-    return form.submit();
-  }
-  if (options === 'validate') {
-    var form = this.data('jsonform-tree');
-    if (!form) return null;
-    return form.validate(param1);
-  }
+    /**
+     * Generates the HTML form from the given JSON Form object and renders the form.
+     *
+     * Main entry point of the library. Defined as a jQuery function that typically
+     * needs to be applied to a <form> element in the document.
+     *
+     * The function handles the following properties for the JSON Form object it
+     * receives as parameter:
+     * - schema (required): The JSON Schema that describes the form to render
+     * - form: The options form layout description, overrides default layout
+     * - prefix: String to use to prefix computed IDs. Default is an empty string.
+     *  Use this option if JSON Form is used multiple times in an application with
+     *  schemas that have overlapping parameter names to avoid running into multiple
+     *  IDs issues. Default value is "jsonform-[counter]".
+     * - transloadit: Transloadit parameters when transloadit is used
+     * - validate: Validates form against schema upon submission. Uses the value
+     * of the "validate" property as validator if it is an object.
+     * - displayErrors: Function to call with errors upon form submission.
+     *  Default is to render the errors next to the input fields.
+     * - submitEvent: Name of the form submission event to bind to.
+     *  Default is "submit". Set this option to false to avoid event binding.
+     * - onSubmit: Callback function to call when form is submitted
+     * - onSubmitValid: Callback function to call when form is submitted without
+     *  errors.
+     *
+     * @function
+     * @param {Object} options The JSON Form object to use as basis for the form
+     */
+    $.fn.jsonForm = function(options, param1) {
+        var form: FormTree;
 
-  var formElt = this;
+        if (options === 'values') {
+            return jsonform.getFormValue(this);
+        }
+        if (options === 'submit') {
+            form = this.data('jsonform-tree');
+            if (!form) return null;
+            return form.submit();
+        }
+        if (options === 'validate') {
+            form = this.data('jsonform-tree');
+            if (!form) return null;
+            return form.validate(param1);
+        }
 
-  options = _.defaults({}, options, {submitEvent: 'submit', disableInactiveTabs: true});
+        var formElt = this;
 
-  var form = new formTree();
-  form.initialize(options);
-  form.render(formElt.get(0));
+        options = _.defaults({}, options, { submitEvent: 'submit', disableInactiveTabs: true });
 
-  // TODO: move that to formTree.render
-  if (options.transloadit) {
-    formElt.append('<input type="hidden" name="params" value=\'' +
-      util.escapeHTML(JSON.stringify(options.transloadit.params)) +
-      '\'>');
-  }
+        form = new FormTree();
+        form.initialize(options);
+        form.render(formElt.get(0));
 
-  // Keep a direct pointer to the JSON schema for form submission purpose
-  formElt.data("jsonform-tree", form);
+        // TODO: move that to formTree.render
+        if (options.transloadit) {
+            formElt.append('<input type="hidden" name="params" value=\'' +
+                util.escapeHTML(JSON.stringify(options.transloadit.params)) +
+                '\'>');
+        }
 
-  if (options.submitEvent) {
-    formElt.unbind((options.submitEvent)+'.jsonform');
-    formElt.bind((options.submitEvent)+'.jsonform', function(evt) {
-      form.submit(evt);
-    });
-  }
+        // Keep a direct pointer to the JSON schema for form submission purpose
+        formElt.data("jsonform-tree", form);
 
-  // Initialize tabs sections, if any
-  initializeTabs(formElt, options);
+        if (options.submitEvent) {
+            formElt.unbind((options.submitEvent) + '.jsonform');
+            formElt.bind((options.submitEvent) + '.jsonform', function(evt) {
+                form.submit(evt);
+            });
+        }
 
-  // Initialize expandable sections, if any
-  $('.expandable > div, .expandable > fieldset', formElt).hide();
-  formElt.on('click', '.expandable > legend', function () {
-    var parent = $(this).parent();
-    parent.toggleClass('expanded');
-    $('> div', parent).slideToggle(100);
-  });
+        // Initialize tabs sections, if any
+        initializeTabs(formElt, options);
 
-  return form;
-};
+        // Initialize expandable sections, if any
+        $('.expandable > div, .expandable > fieldset', formElt).hide();
+        formElt.on('click', '.expandable > legend', function() {
+            var parent = $(this).parent();
+            parent.toggleClass('expanded');
+            $('> div', parent).slideToggle(100);
+        });
+
+        return form;
+    };
 
 
 /**
