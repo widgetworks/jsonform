@@ -5,220 +5,6 @@ namespace jsonform {
     
     
     /**
-     * Returns the initial value that a field identified by its key
-     * should take.
-     *
-     * The "initial" value is defined as:
-     * 1. the previously submitted value if already submitted
-     * 2. the default value defined in the layout of the form
-     * 3. the default value defined in the schema
-     *
-     * The "value" returned is intended for rendering purpose,
-     * meaning that, for fields that define a titleMap property,
-     * the function returns the label, and not the intrinsic value.
-     *
-     * The function handles values that contains template strings,
-     * e.g. {{values.foo[].bar}} or {{idx}}.
-     *
-     * When the form is a string, the function truncates the resulting string
-     * to meet a potential "maxLength" constraint defined in the schema, using
-     * "..." to mark the truncation. Note it does not validate the resulting
-     * string against other constraints (e.g. minLength, pattern) as it would
-     * be hard to come up with an automated course of action to "fix" the value.
-     *
-     * @function
-     * @param {Object} formObject The JSON Form object
-     * @param {String} key The generic key path (e.g. foo[].bar.baz[])
-     * @param {Array(Number)} arrayPath The array path that identifies
-     *  the unique value in the submitted form (e.g. [1, 3])
-     * @param {Object} tpldata Template data object
-     * @param {Boolean} usePreviousValues true to use previously submitted values
-     *  if defined.
-     */
-    export var getInitialValue = function(formObject, key, arrayPath, tpldata, usePreviousValues) {
-        var value = null;
-
-        // Complete template data for template function
-        tpldata = tpldata || {};
-        tpldata.idx = tpldata.idx ||
-            (arrayPath ? arrayPath[arrayPath.length - 1] : 1);
-        tpldata.value = util.isSet(tpldata.value) ? tpldata.value : '';
-        tpldata.getValue = tpldata.getValue || function(key) {
-            return getInitialValue(formObject, key, arrayPath, tpldata, usePreviousValues);
-        };
-
-        // Helper function that returns the form element that explicitly
-        // references the given key in the schema.
-        var getFormElement = function(elements, key) {
-            var formElement = null;
-            if (!elements || !elements.length) return null;
-            _.each(elements, function(elt) {
-                if (formElement) return;
-                if (elt === key) {
-                    formElement = { key: elt };
-                    return;
-                }
-                if (_.isString(elt)) return;
-                if (elt.key === key) {
-                    formElement = elt;
-                }
-                else if (elt.items) {
-                    formElement = getFormElement(elt.items, key);
-                }
-            });
-            return formElement;
-        };
-        var formElement = getFormElement(formObject.form || [], key);
-        var schemaElement = util.getSchemaKey(formObject.schema.properties, key);
-
-        if (usePreviousValues && formObject.value) {
-            // If values were previously submitted, use them directly if defined
-            value = jsonform.util.getObjKey(formObject.value, applyArrayPath(key, arrayPath));
-        }
-        if (!util.isSet(value)) {
-            if (formElement && (typeof formElement['value'] !== 'undefined')) {
-                // Extract the definition of the form field associated with
-                // the key as it may override the schema's default value
-                // (note a "null" value overrides a schema default value as well)
-                value = formElement['value'];
-            }
-            else if (schemaElement) {
-                // Simply extract the default value from the schema
-                if (util.isSet(schemaElement['default'])) {
-                    value = schemaElement['default'];
-                }
-            }
-            if (value && value.indexOf('{{values.') !== -1) {
-                // This label wants to use the value of another input field.
-                // Convert that construct into {{getValue(key)}} for
-                // Underscore to call the appropriate function of formData
-                // when template gets called (note calling a function is not
-                // exactly Mustache-friendly but is supported by Underscore).
-                value = value.replace(
-                    /\{\{values\.([^\}]+)\}\}/g,
-                    '{{getValue("$1")}}');
-            }
-            if (value) {
-                value = util._template(value, tpldata, util.valueTemplateSettings);
-            }
-        }
-
-        // TODO: handle on the formElement.options, because user can setup it too.
-        // Apply titleMap if needed
-        if (util.isSet(value) && formElement && util.hasOwnProperty(formElement.titleMap, value)) {
-            value = util._template(formElement.titleMap[value],
-                tpldata, util.valueTemplateSettings);
-        }
-
-        // Check maximum length of a string
-        if (value && _.isString(value) &&
-            schemaElement && schemaElement.maxLength) {
-            if (value.length > schemaElement.maxLength) {
-                // Truncate value to maximum length, adding continuation dots
-                value = value.substr(0, schemaElement.maxLength - 1) + '…';
-            }
-        }
-
-        if (!util.isSet(value)) {
-            return null;
-        }
-        else {
-            return value;
-        }
-    };
-    
-    
-    /**
-     * Applies the array path to the key path.
-     *
-     * For instance, if the key path is:
-     *  foo.bar[].baz.toto[].truc[].bidule
-     * and the arrayPath [4, 2], the returned key will be:
-     *  foo.bar[4].baz.toto[2].truc[].bidule
-     *
-     * @function
-     * @param {String} key The path to the key in the schema, each level being
-     *  separated by a dot and array items being flagged with [].
-     * @param {Array(Number)} arrayPath The array path to apply, e.g. [4, 2]
-     * @return {String} The path to the key that matches the array path.
-     */
-    export var applyArrayPath = function(key, arrayPath) {
-        var depth = 0;
-        if (!key) return null;
-        if (!arrayPath || (arrayPath.length === 0)) return key;
-        var newKey = key.replace(jsonform.util.reArray, function(str, p1) {
-            // Note this function gets called as many times as there are [x] in the ID,
-            // from left to right in the string. The goal is to replace the [x] with
-            // the appropriate index in the new array path, if defined.
-            var newIndex = str;
-            if (util.isSet(arrayPath[depth])) {
-                newIndex = '[' + arrayPath[depth] + ']';
-            }
-            depth += 1;
-            return newIndex;
-        });
-        return newKey;
-    };
-    
-    
-    /**
-     * Retrieves the key default value from the given schema.
-     *
-     * The key is identified by the path that leads to the key in the
-     * structured object that the schema would generate. Each level is
-     * separated by a '.'. Array levels are marked with [idx]. For instance:
-     *  foo.bar[3].baz
-     * ... to retrieve the definition of the key at the following location
-     * in the JSON schema (using a dotted path notation):
-     *  foo.properties.bar.items.properties.baz
-     *
-     * @function
-     * @param {Object} schema The top level JSON schema to retrieve the key from
-     * @param {String} key The path to the key, each level being separated
-     *  by a dot and array items being flagged with [idx].
-     * @param {Number} top array level of schema within it we search the default.
-     * @return {Object} The key definition in the schema, null if not found.
-     */
-    var getSchemaDefaultByKeyWithArrayIdx = function(schema, key, topDefaultArrayLevel) {
-        topDefaultArrayLevel = topDefaultArrayLevel || 0;
-        var defaultValue = undefined;
-        if (!util.isSet(key) || key === '') {
-            if (topDefaultArrayLevel == 0)
-                defaultValue = schema.default;
-        }
-        else if (schema.default && topDefaultArrayLevel == 0) {
-            defaultValue = jsonform.util.getObjKeyEx(schema.default, key);
-        }
-        else {
-            var m = key.match(/^((([^\\\[.]|\\.)+)|\[(\d+)\])\.?(.*)$/);
-            if (!m)
-                throw new Error('bad format key: ' + key);
-
-            if (typeof m[2] === 'string' && m[2].length > 0) {
-                schema = schema.properties[m[2]];
-            }
-            else if (typeof m[4] === 'string' && m[4].length > 0) {
-                schema = schema.items;
-                if (topDefaultArrayLevel > 0)
-                    --topDefaultArrayLevel;
-            }
-            else
-                throw new Error('impossible reach here');
-
-            if (schema) {
-                if (schema.default && topDefaultArrayLevel == 0) {
-                    defaultValue = jsonform.util.getObjKeyEx(schema.default, m[5]);
-                }
-                else {
-                    defaultValue = getSchemaDefaultByKeyWithArrayIdx(schema, m[5], topDefaultArrayLevel);
-                }
-            }
-        }
-        return defaultValue;
-    };
-    
-    
-    /**
      * Represents a node in the form.
      *
      * Nodes that have an ID are linked to the corresponding DOM element
@@ -1568,6 +1354,220 @@ namespace jsonform {
             return boundaries;
         };
         return getNodeBoundaries(this);
+    };
+    
+    
+    /**
+     * Returns the initial value that a field identified by its key
+     * should take.
+     *
+     * The "initial" value is defined as:
+     * 1. the previously submitted value if already submitted
+     * 2. the default value defined in the layout of the form
+     * 3. the default value defined in the schema
+     *
+     * The "value" returned is intended for rendering purpose,
+     * meaning that, for fields that define a titleMap property,
+     * the function returns the label, and not the intrinsic value.
+     *
+     * The function handles values that contains template strings,
+     * e.g. {{values.foo[].bar}} or {{idx}}.
+     *
+     * When the form is a string, the function truncates the resulting string
+     * to meet a potential "maxLength" constraint defined in the schema, using
+     * "..." to mark the truncation. Note it does not validate the resulting
+     * string against other constraints (e.g. minLength, pattern) as it would
+     * be hard to come up with an automated course of action to "fix" the value.
+     *
+     * @function
+     * @param {Object} formObject The JSON Form object
+     * @param {String} key The generic key path (e.g. foo[].bar.baz[])
+     * @param {Array(Number)} arrayPath The array path that identifies
+     *  the unique value in the submitted form (e.g. [1, 3])
+     * @param {Object} tpldata Template data object
+     * @param {Boolean} usePreviousValues true to use previously submitted values
+     *  if defined.
+     */
+    export var getInitialValue = function(formObject, key, arrayPath, tpldata, usePreviousValues) {
+        var value = null;
+
+        // Complete template data for template function
+        tpldata = tpldata || {};
+        tpldata.idx = tpldata.idx ||
+            (arrayPath ? arrayPath[arrayPath.length - 1] : 1);
+        tpldata.value = util.isSet(tpldata.value) ? tpldata.value : '';
+        tpldata.getValue = tpldata.getValue || function(key) {
+            return getInitialValue(formObject, key, arrayPath, tpldata, usePreviousValues);
+        };
+
+        // Helper function that returns the form element that explicitly
+        // references the given key in the schema.
+        var getFormElement = function(elements, key) {
+            var formElement = null;
+            if (!elements || !elements.length) return null;
+            _.each(elements, function(elt) {
+                if (formElement) return;
+                if (elt === key) {
+                    formElement = { key: elt };
+                    return;
+                }
+                if (_.isString(elt)) return;
+                if (elt.key === key) {
+                    formElement = elt;
+                }
+                else if (elt.items) {
+                    formElement = getFormElement(elt.items, key);
+                }
+            });
+            return formElement;
+        };
+        var formElement = getFormElement(formObject.form || [], key);
+        var schemaElement = util.getSchemaKey(formObject.schema.properties, key);
+
+        if (usePreviousValues && formObject.value) {
+            // If values were previously submitted, use them directly if defined
+            value = jsonform.util.getObjKey(formObject.value, applyArrayPath(key, arrayPath));
+        }
+        if (!util.isSet(value)) {
+            if (formElement && (typeof formElement['value'] !== 'undefined')) {
+                // Extract the definition of the form field associated with
+                // the key as it may override the schema's default value
+                // (note a "null" value overrides a schema default value as well)
+                value = formElement['value'];
+            }
+            else if (schemaElement) {
+                // Simply extract the default value from the schema
+                if (util.isSet(schemaElement['default'])) {
+                    value = schemaElement['default'];
+                }
+            }
+            if (value && value.indexOf('{{values.') !== -1) {
+                // This label wants to use the value of another input field.
+                // Convert that construct into {{getValue(key)}} for
+                // Underscore to call the appropriate function of formData
+                // when template gets called (note calling a function is not
+                // exactly Mustache-friendly but is supported by Underscore).
+                value = value.replace(
+                    /\{\{values\.([^\}]+)\}\}/g,
+                    '{{getValue("$1")}}');
+            }
+            if (value) {
+                value = util._template(value, tpldata, util.valueTemplateSettings);
+            }
+        }
+
+        // TODO: handle on the formElement.options, because user can setup it too.
+        // Apply titleMap if needed
+        if (util.isSet(value) && formElement && util.hasOwnProperty(formElement.titleMap, value)) {
+            value = util._template(formElement.titleMap[value],
+                tpldata, util.valueTemplateSettings);
+        }
+
+        // Check maximum length of a string
+        if (value && _.isString(value) &&
+            schemaElement && schemaElement.maxLength) {
+            if (value.length > schemaElement.maxLength) {
+                // Truncate value to maximum length, adding continuation dots
+                value = value.substr(0, schemaElement.maxLength - 1) + '…';
+            }
+        }
+
+        if (!util.isSet(value)) {
+            return null;
+        }
+        else {
+            return value;
+        }
+    };
+    
+    
+    /**
+     * Applies the array path to the key path.
+     *
+     * For instance, if the key path is:
+     *  foo.bar[].baz.toto[].truc[].bidule
+     * and the arrayPath [4, 2], the returned key will be:
+     *  foo.bar[4].baz.toto[2].truc[].bidule
+     *
+     * @function
+     * @param {String} key The path to the key in the schema, each level being
+     *  separated by a dot and array items being flagged with [].
+     * @param {Array(Number)} arrayPath The array path to apply, e.g. [4, 2]
+     * @return {String} The path to the key that matches the array path.
+     */
+    export var applyArrayPath = function(key, arrayPath) {
+        var depth = 0;
+        if (!key) return null;
+        if (!arrayPath || (arrayPath.length === 0)) return key;
+        var newKey = key.replace(jsonform.util.reArray, function(str, p1) {
+            // Note this function gets called as many times as there are [x] in the ID,
+            // from left to right in the string. The goal is to replace the [x] with
+            // the appropriate index in the new array path, if defined.
+            var newIndex = str;
+            if (util.isSet(arrayPath[depth])) {
+                newIndex = '[' + arrayPath[depth] + ']';
+            }
+            depth += 1;
+            return newIndex;
+        });
+        return newKey;
+    };
+    
+    
+    /**
+     * Retrieves the key default value from the given schema.
+     *
+     * The key is identified by the path that leads to the key in the
+     * structured object that the schema would generate. Each level is
+     * separated by a '.'. Array levels are marked with [idx]. For instance:
+     *  foo.bar[3].baz
+     * ... to retrieve the definition of the key at the following location
+     * in the JSON schema (using a dotted path notation):
+     *  foo.properties.bar.items.properties.baz
+     *
+     * @function
+     * @param {Object} schema The top level JSON schema to retrieve the key from
+     * @param {String} key The path to the key, each level being separated
+     *  by a dot and array items being flagged with [idx].
+     * @param {Number} top array level of schema within it we search the default.
+     * @return {Object} The key definition in the schema, null if not found.
+     */
+    var getSchemaDefaultByKeyWithArrayIdx = function(schema, key, topDefaultArrayLevel) {
+        topDefaultArrayLevel = topDefaultArrayLevel || 0;
+        var defaultValue = undefined;
+        if (!util.isSet(key) || key === '') {
+            if (topDefaultArrayLevel == 0)
+                defaultValue = schema.default;
+        }
+        else if (schema.default && topDefaultArrayLevel == 0) {
+            defaultValue = jsonform.util.getObjKeyEx(schema.default, key);
+        }
+        else {
+            var m = key.match(/^((([^\\\[.]|\\.)+)|\[(\d+)\])\.?(.*)$/);
+            if (!m)
+                throw new Error('bad format key: ' + key);
+
+            if (typeof m[2] === 'string' && m[2].length > 0) {
+                schema = schema.properties[m[2]];
+            }
+            else if (typeof m[4] === 'string' && m[4].length > 0) {
+                schema = schema.items;
+                if (topDefaultArrayLevel > 0)
+                    --topDefaultArrayLevel;
+            }
+            else
+                throw new Error('impossible reach here');
+
+            if (schema) {
+                if (schema.default && topDefaultArrayLevel == 0) {
+                    defaultValue = jsonform.util.getObjKeyEx(schema.default, m[5]);
+                }
+                else {
+                    defaultValue = getSchemaDefaultByKeyWithArrayIdx(schema, m[5], topDefaultArrayLevel);
+                }
+            }
+        }
+        return defaultValue;
     };
 
 }
