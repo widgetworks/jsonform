@@ -13,9 +13,9 @@
 		"target": "es5"
 	},
     "files": [
-        "jsonform-types.ts",
-        "jsonform-util.ts",
-        "jsonform-templates.ts",
+        "lib/jsonform-types.ts",
+        "lib/jsonform-util.ts",
+        "lib/jsonform-templates.ts",
         "jsonform.ts",
         "references.d.ts",
         "references-dev.d.ts"
