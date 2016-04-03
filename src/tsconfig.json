@@ -16,6 +16,7 @@
         "lib/jsonform-util.ts",
         "lib/jsonform-types.ts",
         "lib/FormNode.ts",
+        "lib/FormTree.ts",
         "lib/jsonform-templates.ts",
         "jsonform.ts",
         "references.d.ts",
