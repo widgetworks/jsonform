@@ -61,19 +61,19 @@ namespace jsonform {
             buttonAddonClass: '',
             inlineClassSuffix: ' inline'
         } : {
-                groupClass: 'form-group',
-                groupMarkClassPrefix: 'has-',
-                labelClass: 'control-label',
-                controlClass: 'controls',
-                iconClassPrefix: 'glyphicon glyphicon',
-                buttonClass: 'btn btn-default',
-                textualInputClass: 'form-control',
-                prependClass: 'input-group',
-                appendClass: 'input-group',
-                addonClass: 'input-group-addon',
-                buttonAddonClass: 'input-group-btn',
-                inlineClassSuffix: '-inline'
-            };
+            groupClass: 'form-group',
+            groupMarkClassPrefix: 'has-',
+            labelClass: 'control-label',
+            controlClass: 'controls',
+            iconClassPrefix: 'glyphicon glyphicon',
+            buttonClass: 'btn btn-default',
+            textualInputClass: 'form-control',
+            prependClass: 'input-group',
+            appendClass: 'input-group',
+            addonClass: 'input-group-addon',
+            buttonAddonClass: 'input-group-btn',
+            inlineClassSuffix: '-inline'
+        };
     };
 
   /**
