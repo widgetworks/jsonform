@@ -19,6 +19,12 @@
         "lib/FormTree.ts",
         "lib/jsonform-templates.ts",
         "jsonform.ts",
+        
+        "lib/Events.ts",
+        "lib/IFormElement.ts",
+        "lib/ISchemaElement.ts",
+        "lib/ITemplate.ts",
+        
         "references.d.ts",
         "references-dev.d.ts"
     ]

@@ -73,7 +73,7 @@ namespace jsonform {
 			' />',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				if (node.formElement && node.formElement.autocomplete) {
 					var $input = $(node.el).find('input');
 					if ($input.autocomplete) {
@@ -142,7 +142,7 @@ namespace jsonform {
 			' />',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onBeforeRender': function(data, node) {
+			'onBeforeRender': function(data/*: IRenderData*/, node: FormNode) {
 				data.range = {
 					step: 1
 				};
@@ -188,7 +188,7 @@ namespace jsonform {
 		'text': inputFieldTemplate('text', true),
 		'password': inputFieldTemplate('password', true),
 		'date': inputFieldTemplate('date', true, {
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				if (window.Modernizr && window.Modernizr.inputtypes && !window.Modernizr.inputtypes.date) {
 					var $input = $(node.el).find('input');
 					if ($input.datepicker) {
@@ -202,7 +202,7 @@ namespace jsonform {
 		}),
 		'datetime': inputFieldTemplate('datetime', true),
 		'datetime-local': inputFieldTemplate('datetime-local', true, {
-			'onBeforeRender': function(data, node) {
+			'onBeforeRender': function(data, node: FormNode) {
 				if (data.value && data.value.getTime) {
 					data.value = new Date(data.value.getTime() - data.value.getTimezoneOffset() * 60000).toISOString().slice(0, -1);
 				}
@@ -226,7 +226,7 @@ namespace jsonform {
 			' />',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				$(node.el).find('#' + util.escapeSelector(node.id)).spectrum({
 					preferredFormat: "hex",
 					showInput: true
@@ -256,7 +256,7 @@ namespace jsonform {
 			'><%= value %></textarea>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				var setup = function() {
 					//protect from double init
 					if ($(node.el).data("wysihtml5")) return;
@@ -297,13 +297,13 @@ namespace jsonform {
 			'template': '<div id="<%= id %>" style="position:relative;height:<%= elt.height || "300px" %>;"><div id="<%= id %>__ace" style="width:<%= elt.width || "100%" %>;height:<%= elt.height || "300px" %>;"></div><input type="hidden" name="<%= node.name %>" id="<%= id %>__hidden" value="<%= escape(value) %>"/></div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onBeforeRender': function(data, node) {
+			'onBeforeRender': function(data: IRenderData, node: FormNode) {
 				if (data.value && typeof data.value == 'object' || Array.isArray(data.value))
 					data.value = JSON.stringify(data.value, null, 2);
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				var setup = function() {
-					var formElement = node.formElement || {};
+					var formElement = node.getFormElement();
 					var ace = window.ace;
 					var editor = ace.edit($(node.el).find('#' + util.escapeSelector(node.id) + '__ace').get(0));
 					var idSelector = '#' + util.escapeSelector(node.id) + '__hidden';
@@ -368,7 +368,7 @@ namespace jsonform {
 			'</label></div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				if (node.formElement.toggleNext) {
 					var nextN = node.formElement.toggleNext === true ? 1 : node.formElement.toggleNext;
 					var toggleNextClass = 'jsonform-toggle-next jsonform-toggle-next-' + nextN;
@@ -400,7 +400,7 @@ namespace jsonform {
 			'getElement': function(el) {
 				return $(el).parent().get(0);
 			},
-			'onBeforeRender': function(data, node) {
+			'onBeforeRender': function(data, node/*: FormNode*/) {
 
 				if (!node.ownerTree._transloadit_generic_public_index) {
 					node.ownerTree._transloadit_generic_public_index = 1;
@@ -413,7 +413,7 @@ namespace jsonform {
 				if (!node.ownerTree._transloadit_generic_elts) node.ownerTree._transloadit_generic_elts = {};
 				node.ownerTree._transloadit_generic_elts[data.transloaditname] = node;
 			},
-			'onChange': function(evt, elt) {
+			'onChange': function(evt, elt/*: FormNode*/) {
 				// The "transloadit" function should be called only once to enable
 				// the service when the form is submitted. Has it already been done?
 				if (elt.ownerTree._transloadit_bound) {
@@ -460,7 +460,7 @@ namespace jsonform {
 					}
 				});
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				$(node.el).find('a._jsonform-delete').on('click', function(evt) {
 					$(node.el).find('._jsonform-preview').remove();
 					$(node.el).find('a._jsonform-delete').remove();
@@ -469,7 +469,7 @@ namespace jsonform {
 					return false;
 				});
 			},
-			'onSubmit': function(evt, elt) {
+			'onSubmit': function(evt, elt/*: FormNode*/) {
 				if (elt.ownerTree._transloadit_bound) {
 					return false;
 				}
@@ -484,7 +484,7 @@ namespace jsonform {
 			'getElement': function(el) {
 				return $(el).parent().get(0);
 			},
-			'onChange': function(evt, elt) {
+			'onChange': function(evt, elt/*: FormNode*/) {
 				// The "transloadit" function should be called only once to enable
 				// the service when the form is submitted. Has it already been done?
 				if (elt.ownerTree._transloadit_bound) {
@@ -534,7 +534,7 @@ namespace jsonform {
 					}
 				});
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				$(node.el).find('a._jsonform-delete').on('click', function(evt) {
 					$(node.el).find('._jsonform-preview').remove();
 					$(node.el).find('a._jsonform-delete').remove();
@@ -543,7 +543,7 @@ namespace jsonform {
 					return false;
 				});
 			},
-			'onSubmit': function(evt, elt) {
+			'onSubmit': function(evt, elt/*: FormNode*/) {
 				if (elt.ownerTree._transloadit_bound) {
 					return false;
 				}
@@ -570,7 +570,7 @@ namespace jsonform {
 			'</select>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				if (!$.fn.tagsinput)
 					throw new Error('tagsinput is not found');
 				var $input = $(node.el).find('select');
@@ -599,8 +599,8 @@ namespace jsonform {
 			'</div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onBeforeRender': function(data, node) {
-				var elt = node.formElement || {};
+			'onBeforeRender': function(data, node: FormNode) {
+				var elt = node.getFormElement();
 				var nbRows = null;
 				var maxColumns = elt.imageSelectorColumns || 5;
 				data.buttonTitle = elt.imageSelectorTitle || 'Select...';
@@ -620,7 +620,7 @@ namespace jsonform {
 			'getElement': function(el) {
 				return $(el).parent().get(0);
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				$(node.el).on('click', '.dropdown-menu a', function(evt) {
 					evt.preventDefault();
 					evt.stopPropagation();
@@ -628,7 +628,7 @@ namespace jsonform {
 						$(evt.target) :
 						$(evt.target).find('img');
 					var value = img.attr('src');
-					var elt = node.formElement || {};
+					var elt = node.getFormElement();
 					var prefix = elt.imagePrefix || '';
 					var suffix = elt.imageSuffix || '';
 					var width = elt.imageWidth || 32;
@@ -671,8 +671,8 @@ namespace jsonform {
 			'</div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onBeforeRender': function(data, node) {
-				var elt = node.formElement || {};
+			'onBeforeRender': function(data, node: FormNode) {
+				var elt = node.getFormElement();
 				var nbRows = null;
 				var maxColumns = elt.imageSelectorColumns || 5;
 				data.buttonTitle = elt.imageSelectorTitle || 'Select...';
@@ -688,7 +688,7 @@ namespace jsonform {
 			'getElement': function(el) {
 				return $(el).parent().get(0);
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				$(node.el).on('click', '.dropdown-menu a', function(evt) {
 					evt.preventDefault();
 					evt.stopPropagation();
@@ -696,7 +696,7 @@ namespace jsonform {
 						$(evt.target) :
 						$(evt.target).find('i');
 					var value = i.attr('class');
-					var elt = node.formElement || {};
+					var elt = node.getFormElement();
 					if (value) {
 						value = value;
 						$(node.el).find('input').attr('value', value);
@@ -723,7 +723,7 @@ namespace jsonform {
 			'/><span><%= (key instanceof Object ? key.title : key) %></span></label><%= elt.inline ? "" : "</div>" %> <% }); %></div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				if (node.formElement.toggleNextMap) {
 					var valueMapToNext = {};
 					for (var value in node.formElement.toggleNextMap) {
@@ -769,9 +769,9 @@ namespace jsonform {
 			'</div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				var activeClass = 'active';
-				var elt = node.formElement || {};
+				var elt = node.getFormElement();
 				if (elt.activeClass) {
 					activeClass += ' ' + elt.activeClass;
 				}
@@ -785,7 +785,7 @@ namespace jsonform {
 			'template': '<div id="<%= node.id %>"><%= choiceshtml %><%= children %></div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'childTemplate': function(inner, node) {
+			'childTemplate': function(inner, node: FormNode) {
 				// non-inline style, we do not wrap it.
 				if (!node.formElement.otherField)
 					return inner;
@@ -820,7 +820,7 @@ namespace jsonform {
 				}
 				return template;
 			},
-			'onBeforeRender': function(data, node) {
+			'onBeforeRender': function(data, node: FormNode) {
 				// Build up choices from the enumeration/options list
 				if (!node || !node.schemaElement || !node.schemaElement.items) return;
 				var choices = node.formElement.options;
@@ -847,8 +847,9 @@ namespace jsonform {
 					if (otherValues.length > 0)
 						node.otherValues = otherValues;
 				}
-				else
+				else {
 					delete node.otherValues;
+                }
 				_.each(choices, function(choice, idx) {
 					if (node.formElement.otherField && choice.value === (node.formElement.otherField.otherValue || 'OTHER')) {
 						node.formElement.otherField.idx = idx;
@@ -894,7 +895,7 @@ namespace jsonform {
 
 				data.choiceshtml = choiceshtml;
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				// FIXME: consider default values?
 				function inputHasAnyValue(inputs) {
 					var anyValue = false;
@@ -938,7 +939,7 @@ namespace jsonform {
 			'template': '<div id="<%= node.id %>"><%= choiceshtml %></div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onBeforeRender': function(data, node) {
+			'onBeforeRender': function(data, node: FormNode) {
 				// Build up choices from the enumeration list
 				var choices = null;
 				var choiceshtml = null;
@@ -967,7 +968,7 @@ namespace jsonform {
 			},
 			'onInsert': function(evt, node) {
 				var activeClass = 'active';
-				var elt = node.formElement || {};
+				var elt = node.getFormElement();
 				if (elt.activeClass) {
 					activeClass += ' ' + elt.activeClass;
 				}
@@ -985,7 +986,7 @@ namespace jsonform {
 			'</div>',
 			'fieldtemplate': true,
 			'array': true,
-			'childTemplate': function(inner, node) {
+			'childTemplate': function(inner, node: FormNode) {
 				if (!node.isReadOnly() && $('').sortable) {
 					// Insert a "draggable" icon
 					// floating to the left of the main element
@@ -1001,7 +1002,7 @@ namespace jsonform {
 						'</li>';
 				}
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				var $nodeid = $(node.el).find('#' + util.escapeSelector(node.id));
 				var boundaries = node.getArrayBoundaries();
 
@@ -1142,7 +1143,7 @@ namespace jsonform {
 					inner +
 					'</div>';
 			},
-			'onBeforeRender': function(data, node) {
+			'onBeforeRender': function(data, node: FormNode) {
 				// Generate the initial 'tabs' from the children
 				/*var tabs = '';
 				_.each(node.children, function (child, idx) {
@@ -1167,7 +1168,7 @@ namespace jsonform {
 				data.tabs = tabs;*/
 				data.tabs = '';
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				var $nodeid = $(node.el).find('#' + util.escapeSelector(node.id));
 				var boundaries = node.getArrayBoundaries();
 
@@ -1415,7 +1416,7 @@ namespace jsonform {
 					inner +
 					'</div>';
 			},
-			'onBeforeRender': function(data, node) {
+			'onBeforeRender': function(data, node: FormNode) {
 				// Before rendering, this function ensures that:
 				// 1. direct children have IDs (used to show/hide the tabs contents)
 				// 2. the tab to active is flagged accordingly. The active tab is
@@ -1497,7 +1498,7 @@ namespace jsonform {
 				data.tabs = tabs;
 				return data;
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				$(node.el).find('select.nav').first().on('change', function(evt) {
 					var $option = $(this).find('option:selected');
 					$(node.el).find('input[type="hidden"]').first().val($option.attr('value'));
@@ -1531,7 +1532,7 @@ namespace jsonform {
 			'getElement': function(el) {
 				return $(el).parent().get(0);
 			},
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				if (!node.children || (node.children.length === 0)) return;
 				_.each(node.children, function(child) {
 					$(child.el).hide();
@@ -1553,9 +1554,9 @@ namespace jsonform {
 			'<label class="<%= elt.inline ? "radio"+cls.inlineClassSuffix : "" %> <%= ((key instanceof Object && key.htmlClass) ? " " + key.htmlClass : "") %>">' +
 			'<% } %><input type="radio" <% if (elt.optionsType === "radiobuttons") { %> style="position:absolute;left:-9999px;" <% } %>name="<%= node.id %>" value="<%= val %>"<%= (node.disabled? " disabled" : "")%>/><span><%= (key instanceof Object ? key.title : key) %></span></label><%= elt.optionsType !== "radiobuttons" && !elt.inline ? "</div>" : "" %> <% }); %></div>',
 			'fieldtemplate': true,
-			'onInsert': function(evt, node) {
+			'onInsert': function(evt, node: FormNode) {
 				var activeClass = 'active';
-				var elt = node.formElement || {};
+				var elt = node.getFormElement();
 				if (elt.activeClass) {
 					activeClass += ' ' + elt.activeClass;
 				}

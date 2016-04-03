@@ -15,7 +15,7 @@ namespace jsonform {
      *
      * @class
      */
-    export class FormNode{
+    export class FormNode implements IControlListener {
         /**
          * The node's ID (may not be set)
          */
@@ -37,7 +37,7 @@ namespace jsonform {
          * Link to the form element that describes the node's layout
          * (note the form element is shared among nodes in arrays)
          */
-        formElement /*: IFormElement */ = null;
+        formElement: IFormElement = null;
 
         /**
          * Link to the schema element that describes the node's value constraints
@@ -167,14 +167,22 @@ namespace jsonform {
          * List of data used to generate select list option elements
          * and other list-like types (e.g. lists of radiobuttons).
          */
-        options: any[];
+        options: IOption[] | any[];
+        
+        
+        /**
+         * Used by `checkboxes` template.
+         * 
+         * Something to do with storing values of associated controls?
+         */
+        otherValues: any[];
         
         
         /**
          * Map of event names to event handlers that will be 
          * registered when this FormNode is rendered
          */
-        handlers: {[event: string]: INodeEventHandler};
+        handlers: IHandlerMap;
         
         
         /**
@@ -467,7 +475,7 @@ namespace jsonform {
                     //
                     // The initial values set the initial number of items in the array.
                     // Note a form element contains at least one item when it is rendered.
-                    var key;
+                    var key/*: IFormElement*/;
                     if (this.formElement.items) {
                         key = this.formElement.items[0] || this.formElement.items;
                     }
@@ -1470,6 +1478,16 @@ namespace jsonform {
                 return boundaries;
             };
             return getNodeBoundaries(this);
+        }
+        
+        
+        /**
+         * Return the FormNode's IFormElement instance
+         * or any empty object placeholder to avoid null
+         * pointer exceptions.
+         */
+        getFormElement(){
+            return this.formElement || <IFormElement>{};
         }
         
     }

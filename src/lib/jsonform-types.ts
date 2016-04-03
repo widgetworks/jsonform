@@ -43,10 +43,11 @@ declare namespace jsonform {
     
     
     /**
-     * Event listener signature for FormNode events
+     * Config for HTML option lists.
      */
-    export interface INodeEventHandler {
-        (evt/*: Event*/, node: FormNode): void;
+    export interface IOption {
+        value: string;
+        title: string;
     }
     
 }
