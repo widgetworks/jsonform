@@ -160,7 +160,7 @@ namespace jsonform {
             this.formDesc.params = this.formDesc.params || {};
 
             // Create the root of the tree
-            this.root = new formNode();
+            this.root = new FormNode();
             this.root.ownerTree = this;
             this.root.view = jsonform.elementTypes['root'];
 
@@ -221,7 +221,7 @@ namespace jsonform {
          */
         buildFromLayout(formElement, context?) {
             var schemaElement = null;
-            var node = new formNode();
+            var node = new FormNode();
             var view = null;
             var key = null;
 

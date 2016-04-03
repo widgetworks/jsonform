@@ -41,4 +41,12 @@ declare namespace jsonform {
         fieldHtmlClass: string;
     }
     
+    
+    /**
+     * Event listener signature for FormNode events
+     */
+    export interface INodeEventHandler {
+        (evt/*: Event*/, node: FormNode): void;
+    }
+    
 }
