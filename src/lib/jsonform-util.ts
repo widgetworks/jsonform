@@ -1,8 +1,95 @@
 namespace jsonform.util {
+    
+    // Globals that are required for jsonform to run
+    var serverside = (typeof exports !== 'undefined');
+    export var global = (typeof exports !== 'undefined') ? exports : window;
+    export var $ = (typeof global.jQuery !== 'undefined') ? global.jQuery : { fn: {} };
+    export var _ = (typeof global._ !== 'undefined') ? global._ : null;
+    
+    // Don't try to load underscore.js if is already loaded
+    if (!_) {
+        if (serverside){
+            _ = require('underscore');
+        } else {
+            throw new Error('Missing required underscore/lodash dependency');
+        }
+    }
+    
+    
     /**
      * Regular expressions used to extract array indexes in input field names
      */
     export var reArray = /\[([0-9]*)\](?=\[|\.|$)/g;
+    
+    
+    /**
+     * Escapes selector name for use with jQuery
+     *
+     * All meta-characters listed in jQuery doc are escaped:
+     * http://api.jquery.com/category/selectors/
+     *
+     * @function
+     * @param {String} selector The jQuery selector to escape
+     * @return {String} The escaped selector.
+     */
+    export var escapeSelector = function(selector) {
+        return selector.replace(/([ \!\"\#\$\%\&\'\(\)\*\+\,\.\/\:\;<\=\>\?\@\[\\\]\^\`\{\|\}\~])/g, '\\$1');
+    };
+    
+    
+    // From backbonejs
+    export var escapeHTML = function(string) {
+        if (!isSet(string)) {
+            return '';
+        }
+        string = '' + string;
+        if (!string) {
+            return '';
+        }
+        return string
+            .replace(/&(?!\w+;|#\d+;|#x[\da-f]+;)/gi, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;')
+            .replace(/\//g, '&#x2F;');
+    };
+    
+    
+    /**
+     * Returns true if given value is neither "undefined" nor null
+     */
+    export var isSet = function(value) {
+        return !(_.isUndefined(value) || _.isNull(value));
+    };
+    
+    
+    /**
+     * Template settings for form views
+     */
+    export var fieldTemplateSettings = {
+        evaluate: /<%([\s\S]+?)%>/g,
+        interpolate: /<%=([\s\S]+?)%>/g
+    };
+
+    /**
+     * Template settings for value replacement
+     */
+    export var valueTemplateSettings = {
+        evaluate: /\{\[([\s\S]+?)\]\}/g,
+        interpolate: /\{\{([\s\S]+?)\}\}/g
+    };
+
+    export var _template = typeof _.template('', {}) === 'string' ? _.template : function(tmpl, data, opts) {
+        return _.template(tmpl, opts)(data);
+    }
+
+    /**
+     * Returns true if given property is directly property of an object
+     */
+    export var hasOwnProperty = function(obj, prop) {
+        return typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, prop);
+    }
     
 	
 	//Allow to access subproperties by splitting "."
