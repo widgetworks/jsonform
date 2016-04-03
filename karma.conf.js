@@ -20,6 +20,7 @@ module.exports = function (config) {
 			// 	included: false
 			// },
             
+            ,"build/test/lib/dom-compare.js"
             ,"node_modules/jasmine-jquery/lib/jasmine-jquery.js"
             
 			// Add helpers.

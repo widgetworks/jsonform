@@ -10,6 +10,11 @@
     "clean": "rm -r build/*",
     "ts": "tsc -p src/tsconfig.json",
     "tsw": "tsc -p src/tsconfig.json --watch",
+    
+    "dom-compare-pre": "node scripts/dom-compare-pre.js",
+    "dom-compare-do": "browserify src/test/lib/dom-compare.js --standalone domCompare -o build/test/lib/dom-compare.js",
+    "dom-compare": "npm run dom-compare-pre && npm run dom-compare-do",
+    
     "testw": "tsc -p src/test/tsconfig.json --watch",
     "karma": "karma start",
     "test": "npm run testw & npm run karma"
@@ -29,6 +34,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "browserify": "^13.0.0",
+    "dom-compare": "^0.2.1",
     "http-server": "^0.9.0",
     "jasmine-core": "^2.4.1",
     "jasmine-jquery": "^2.1.1",
@@ -36,6 +43,7 @@
     "karma-chrome-launcher": "^0.2.3",
     "karma-growl-reporter": "^0.1.1",
     "karma-jasmine": "^0.3.8",
+    "mkdirp": "^0.5.1",
     "typescript": "^1.8.9"
   }
 }
