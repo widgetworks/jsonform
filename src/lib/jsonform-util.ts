@@ -274,5 +274,35 @@ namespace jsonform.util {
             innerobj[prop] = value;
         }
     };
+    
+    
+    /**
+     * Retrieves the key definition from the given schema.
+     *
+     * The key is identified by the path that leads to the key in the
+     * structured object that the schema would generate. Each level is
+     * separated by a '.'. Array levels are marked with []. For instance:
+     *  foo.bar[].baz
+     * ... to retrieve the definition of the key at the following location
+     * in the JSON schema (using a dotted path notation):
+     *  foo.properties.bar.items.properties.baz
+     *
+     * @function
+     * @param {Object} schema The JSON schema to retrieve the key from
+     * @param {String} key The path to the key, each level being separated
+     *  by a dot and array items being flagged with [].
+     * @return {Object} The key definition in the schema, null if not found.
+     */
+    export var getSchemaKey = function(schema, key) {
+        var schemaKey = key
+            .replace(/\./g, '.properties.')
+            .replace(/\[[0-9]*\]/g, '.items');
+        var schemaDef = jsonform.util.getObjKey(schema, schemaKey, true);
+        if (schemaDef && schemaDef.$ref) {
+            throw new Error('JSONForm does not yet support schemas that use the ' +
+                '$ref keyword. See: https://github.com/joshfire/jsonform/issues/54');
+        }
+        return schemaDef;
+    };
 	
 }
