@@ -6,7 +6,8 @@ namespace jsonform {
 	
 	// Twitter bootstrap-friendly HTML boilerplate for standard inputs
 	export function fieldTemplate(inner: string) {
-		return '<div class="<%= cls.groupClass %> jsonform-node jsonform-error-<%= keydash %>' +
+		
+		return '<div class="<%= cls.groupClass %> jsonform-node jsonform-error-<%= keydash %> <%= node.formElement.type?"_jsonform-"+node.formElement.type:"" %>' +
 			'<%= elt.htmlClass ? " " + elt.htmlClass : "" %>' +
 			'<%= (node.required && node.formElement && (node.formElement.type !== "checkbox") ? " jsonform-required" : "") %>' +
 			'<%= (node.isReadOnly() ? " jsonform-readonly" : "") %>' +
