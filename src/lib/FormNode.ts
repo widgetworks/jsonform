@@ -1068,9 +1068,9 @@ namespace jsonform {
                 }
             }
 
-            _.each(this.children, function(child) {
+            _.each(this.children, (child) => {
                 child.updateElement(this.el || domNode);
-            }, this);
+            });
         }
 
 
@@ -1079,7 +1079,7 @@ namespace jsonform {
          *
          * @function
          */
-        generate() {
+        generate(parentData?: IRenderData) {
             var data: IRenderData = {
                 id: this.id,
                 keydash: this.keydash,
@@ -1136,7 +1136,7 @@ namespace jsonform {
                  * 
                  * This lets us do more-specific processing for each child.
                  */
-                template = this.parentNode.view.childTemplate(template, this.parentNode, data);
+                template = this.parentNode.view.childTemplate(template, this.parentNode, data, this, parentData);
                 /* END */
             }
 
@@ -1147,10 +1147,10 @@ namespace jsonform {
              * 
              * Keep track of the rendered child template.
              */
-            _.each(this.children, function(child) {
+            _.each(this.children, (child: FormNode) => {
                 // Original:
                 // childrenhtml += child.generate();
-                var renderedChild = child.generate();
+                var renderedChild = child.generate(data);
                 if (child.parentNode &&
                     child.parentNode.view &&
                     child.parentNode.view.afterChildTemplate) {
@@ -1214,6 +1214,15 @@ namespace jsonform {
             var handlers = null;
             var handler = null;
             var formData = _.clone(this.ownerTree.formDesc.tpldata) || {};
+            
+            // Debugging - Coridyn: Callback to form-level onInsert method.
+            // Always call this regardless of if there is a formElement.
+            if (this.ownerTree.formDesc.onInsert) {
+                // Coridyn: Need information about the parent element or the parent tree.
+                this.ownerTree.formDesc.onInsert({ target: $(this.el) }, this);
+            }
+            // End of debugging.
+
 
             if (this.formElement) {
                 // Check the view associated with the node as it may define an "onInsert"

@@ -1197,7 +1197,7 @@ namespace jsonform {
                     data.columnCount = simpleCount;
                 }
             },
-            'childTemplate': function(inner, data, node, parentData) {
+            'childTemplate': function(inner, parentNode, data, node, parentData) {
                 //'<td></td>'
                 // TODO: How do we know how many children we have?
 
@@ -1216,7 +1216,7 @@ namespace jsonform {
                 // return inner;
                 return '<td>' + inner + '</td>';
             },
-            onBeforeTemplate: function(data, node) {
+            onAfterRender: function(data, node) {
 
 
                 // if (data.childMap){
