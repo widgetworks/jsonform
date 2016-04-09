@@ -304,5 +304,20 @@ namespace jsonform.util {
         }
         return schemaDef;
     };
+    
+    
+    /**
+     * TypeScript type guards
+     */
+    // export function isSchemaElement(schema: ISchemaElementAny): schema is ISchemaElement{
+    //     return schema.type === jsonform.schema.Type.object;
+    // }
+    // export function isSchemaElementV3(schema: ISchemaElementAny): schema is ISchemaElement{
+    //     return schema.type === jsonform.schema.Type.object;
+    // }
+    
+    export function isObject(schema: ISchemaElement): schema is ISchemaObject{
+        return schema.type === jsonform.schema.Type.object;
+    }
 	
 }

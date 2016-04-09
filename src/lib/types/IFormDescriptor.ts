@@ -34,6 +34,25 @@ namespace jsonform {
         
         params?: IFormParams;
         tpldata?: IFormTemplateData;
+        
+        /**
+         * Used to control which top-level schema properties are 
+         * displayed in the form when there is an '*' item in the
+         * `IFormDescriptor.form` list.
+         * 
+         * Logic works like this:
+         * 
+         *   For each `IFormDescriptor.form` item then:
+         *     If the item == '*' then:
+         *       For each top-level `IFormDescriptor.schema.properties` item
+         *         If it exists in the `nonDefaultFormItems` array then:
+         *           exclude it from the form
+         *         Else:
+         *           include it in the form
+         *     Else:
+         *       include it in the form
+         */
+        nonDefaultFormItems?: string[];
     
     
         /**
@@ -92,8 +111,12 @@ namespace jsonform {
          * See `jsonform.getDefaultClasses()`
          */
         defaultClasses?: {[classId: string]: string};
-    
-    
+        
+        
+        validate: ValidateForm;
+        displayErrors?: (errors: any[], domRoot) => void;
+        
+        
         /**
          * Event callbacks
          */
@@ -102,9 +125,31 @@ namespace jsonform {
         onBeforeRender?: (data: IRenderData, node: FormNode) => void;
         onInsert?: (event: EventLike, node: FormNode) => void;
         onAfterRender?: (data: IRenderData, node: FormNode) => void;
-        onElementSchema: () => void;
+        onElementSchema?: (formElement: IFormElement, schemaElement: ISchemaElement) => void;
     
+        /**
+         * Invoked when the form is about to be submitted.
+         * 
+         * This is invoked after validation has been run and will
+         * pass a list of errors (if any) and the data from the
+         * schema editor.
+         * 
+         * Return `false` from this function to prevent form submission.
+         * 
+         * @param errors
+         * @param values
+         */
+        onSubmit?: (errors: any[], values: any) => boolean;
     
+        /**
+         * Invoked after `onSubmit()` only if there weren't
+         * any errors and if `onSubmit()` did not return `false`.
+         * 
+         * @param values
+         */
+        onSubmitValid?: (values: any) => boolean;
+        
+        
         /**
          * Alternative event to listen for to trigger form submission.
          * 
@@ -148,6 +193,17 @@ namespace jsonform {
         idx?: number;
         value?: string;
         getValue?: (key: string) => any;
+    }
+    
+    
+    export type ValidateForm = boolean | IValidator;
+    
+    
+    export interface IValidator{
+        _vendor: string;
+        
+        validate(schema, values);
+        validate(values, schema);
     }
     
 }

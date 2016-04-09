@@ -177,9 +177,10 @@ namespace jsonform {
 				}
 			}
 		};
-	}
+	};
+	
 
-	export var elementTypes = {
+	export var elementTypes: {[type:string]: ITemplate} = {
 		'none': {
 			'template': ''
 		},
@@ -401,20 +402,21 @@ namespace jsonform {
 			'getElement': function(el) {
 				return $(el).parent().get(0);
 			},
-			'onBeforeRender': function(data, node/*: FormNode*/) {
+			'onBeforeRender': function(data, node: FormNode_TransloadIt) {
+				var ownerTree: FormTree_TransloadIt = node.ownerTree;
 
-				if (!node.ownerTree._transloadit_generic_public_index) {
-					node.ownerTree._transloadit_generic_public_index = 1;
+				if (!ownerTree._transloadit_generic_public_index) {
+					ownerTree._transloadit_generic_public_index = 1;
 				} else {
-					node.ownerTree._transloadit_generic_public_index++;
+					ownerTree._transloadit_generic_public_index++;
 				}
 
-				data.transloaditname = "_transloadit_jsonform_genericupload_public_" + node.ownerTree._transloadit_generic_public_index;
+				data.transloaditname = "_transloadit_jsonform_genericupload_public_" + ownerTree._transloadit_generic_public_index;
 
-				if (!node.ownerTree._transloadit_generic_elts) node.ownerTree._transloadit_generic_elts = {};
-				node.ownerTree._transloadit_generic_elts[data.transloaditname] = node;
+				if (!ownerTree._transloadit_generic_elts) ownerTree._transloadit_generic_elts = {};
+				ownerTree._transloadit_generic_elts[data.transloaditname] = node;
 			},
-			'onChange': function(evt, elt/*: FormNode*/) {
+			'onChange': function(evt, elt: FormNode_TransloadIt) {
 				// The "transloadit" function should be called only once to enable
 				// the service when the form is submitted. Has it already been done?
 				if (elt.ownerTree._transloadit_bound) {
@@ -461,7 +463,7 @@ namespace jsonform {
 					}
 				});
 			},
-			'onInsert': function(evt, node: FormNode) {
+			'onInsert': function(evt, node: FormNode_TransloadIt) {
 				$(node.el).find('a._jsonform-delete').on('click', function(evt) {
 					$(node.el).find('._jsonform-preview').remove();
 					$(node.el).find('a._jsonform-delete').remove();
@@ -470,7 +472,7 @@ namespace jsonform {
 					return false;
 				});
 			},
-			'onSubmit': function(evt, elt/*: FormNode*/) {
+			'onSubmit': function(evt, elt: FormNode_TransloadIt) {
 				if (elt.ownerTree._transloadit_bound) {
 					return false;
 				}
@@ -485,7 +487,7 @@ namespace jsonform {
 			'getElement': function(el) {
 				return $(el).parent().get(0);
 			},
-			'onChange': function(evt, elt/*: FormNode*/) {
+			'onChange': function(evt, elt: FormNode_TransloadIt) {
 				// The "transloadit" function should be called only once to enable
 				// the service when the form is submitted. Has it already been done?
 				if (elt.ownerTree._transloadit_bound) {
@@ -535,7 +537,7 @@ namespace jsonform {
 					}
 				});
 			},
-			'onInsert': function(evt, node: FormNode) {
+			'onInsert': function(evt, node: FormNode_TransloadIt) {
 				$(node.el).find('a._jsonform-delete').on('click', function(evt) {
 					$(node.el).find('._jsonform-preview').remove();
 					$(node.el).find('a._jsonform-delete').remove();
@@ -544,7 +546,7 @@ namespace jsonform {
 					return false;
 				});
 			},
-			'onSubmit': function(evt, elt/*: FormNode*/) {
+			'onSubmit': function(evt, elt: FormNode_TransloadIt) {
 				if (elt.ownerTree._transloadit_bound) {
 					return false;
 				}

@@ -18,7 +18,7 @@ namespace jsonform {
         
         // From `formTree` constructor
         root: FormNode = null;
-        formDesc = null;
+        formDesc: IFormDescriptor = null;
         
         // Used by class
         domRoot: /* jQuery-wrapped element */ any = null;
@@ -62,6 +62,10 @@ namespace jsonform {
             this.formDesc.prefix = this.formDesc.prefix ||
                 'jsonform-' + _.uniqueId();
 
+            /**
+             * 2016-04-09
+             * TODO: Update this to allow full schema as well as shorthand.
+             */
             // JSON schema shorthand
             if (this.formDesc.schema && !this.formDesc.schema.properties) {
                 this.formDesc.schema = {
@@ -72,24 +76,42 @@ namespace jsonform {
             // Schema V4 adjust, required field moved to top level of the schema
             var processedSchemaNodes = []; // prevent inner dead loop.
             function convertSchemaV3ToV4(schema) {
-                if (schema && schema.properties) {
-                    var required = Array.isArray(schema.required) ? schema.required : [];
+                if (!schema){
+                    // return schema;
+                    return;
+                }
+                
+                var omitList: string[] = [];
+                
+                if (_.has(schema, 'readonly')){
+                    omitList.push('readonly');
+                    schema.readOnly = schema['readonly'];
+                }
+                
+                if (schema.properties) {
+                    var required = [].concat(schema.required);
+                    
                     for (var field in schema.properties) {
-                        var fieldSchema = schema.properties[field];
+                        var fieldSchema/*: ISchemaElement*/ = schema.properties[field];
                         if (fieldSchema.required === true) {
-                            if (required.indexOf(field) < 0)
+                            if (required.indexOf(field) < 0){
                                 required.push(field);
+                            }
                         }
-                        else if (fieldSchema.required !== undefined && fieldSchema.required !== false && !Array.isArray(fieldSchema.required))
+                        else if (fieldSchema.required !== undefined && fieldSchema.required !== false && !Array.isArray(fieldSchema.required)){
                             throw new Error('field ' + field + "'s required property should be either boolean or array of strings");
+                        }
+                            
                         if (fieldSchema.type === 'object') {
                             if (processedSchemaNodes.indexOf(fieldSchema) < 0) {
                                 processedSchemaNodes.push(fieldSchema);
                                 convertSchemaV3ToV4(fieldSchema);
                             }
                         }
-                        else
+                        else {
                             delete fieldSchema.required;
+                        }
+                        
                         if (fieldSchema.type === 'array' && fieldSchema.items) {
                             if (Array.isArray(fieldSchema.items)) {
                                 throw new Error('the items property of array property ' + field + ' in the schema definition must be an object');
@@ -102,11 +124,24 @@ namespace jsonform {
                             }
                         }
                     }
-                    if (required.length > 0)
+                    
+                    if (required.length > 0){
                         schema.required = required;
-                    else
+                    } else {
+                        omitList.push('required');
+                        
                         delete schema.required;
+                    }
                 }
+    
+                /**
+                 * TODO: Duplicate the object and omit the unnecessary properties.
+                 * 
+                 * TODO: This might mess with the circular-reference detection...
+                 * Maybe just do a deep clone right at the end?
+                 */
+                // schema = _.omit(schema, omitList);
+                // return schema;
             }
             convertSchemaV3ToV4(this.formDesc.schema);
             if (this.formDesc.schema.definitions) {
@@ -146,21 +181,9 @@ namespace jsonform {
             }
 
             // Ensure layout is set
-            this.formDesc.form = this.formDesc.form || [
-                '*',
-                {
-                    type: 'actions',
-                    items: [
-                        {
-                            type: 'submit',
-                            value: 'Submit'
-                        }
-                    ]
-                }
-            ];
-            this.formDesc.form = (_.isArray(this.formDesc.form) ?
-                this.formDesc.form :
-                [this.formDesc.form]);
+            this.formDesc.form = this.formDesc.form || this._getDefaultFormElements();
+            // Ensure `formDesc.form` is an array.
+            this.formDesc.form = [].concat(this.formDesc.form);
 
             this.formDesc.params = this.formDesc.params || {};
 
@@ -176,6 +199,30 @@ namespace jsonform {
             // (for arrays, the computation actually creates the form nodes)
             this.computeInitialValues();
         }
+    
+    
+        /**
+         * Return the default FormElement definition.
+         * 
+         * This is a shorthand for include all schema elements and
+         * then append an 'actions' element with a submit button.
+         * 
+         * @private
+         */
+        _getDefaultFormElements(): IFormElementOrString[]{
+            return [
+                '*',
+                {
+                    type: 'actions',
+                    items: [
+                        {
+                            type: 'submit',
+                            value: 'Submit'
+                        }
+                    ]
+                }
+            ];
+        }
         
         
         /**
@@ -190,15 +237,17 @@ namespace jsonform {
             // - '*' means "generate all possible fields using default layout"
             // - a key reference to target a specific data element
             // - a more complex object to generate specific form sections
-            _.each(this.formDesc.form, function(formElement) {
+            _.each(this.formDesc.form, (formElement) => {
                 if (formElement === '*') {
-                    _.each(this.formDesc.schema.properties, function(element, key) {
-                        if (this.formDesc.nonDefaultFormItems && this.formDesc.nonDefaultFormItems.indexOf(key) >= 0)
+                    _.each(this.formDesc.schema.properties, (element, key: string) => {
+                        if (this.formDesc.nonDefaultFormItems && this.formDesc.nonDefaultFormItems.indexOf(key) >= 0){
                             return;
+                        }
+                        
                         this.root.appendChild(this.buildFromLayout({
                             key: key
                         }));
-                    }, this);
+                    });
                 }
                 else {
                     if (_.isString(formElement)) {
@@ -208,7 +257,7 @@ namespace jsonform {
                     }
                     this.root.appendChild(this.buildFromLayout(formElement));
                 }
-            }, this);
+            });
         }
 
 
@@ -228,9 +277,9 @@ namespace jsonform {
          * Coridyn: candidate for refactoring
          */
         buildFromLayout(formElement: IFormElement, context?): FormNode {
-            var schemaElement = null;
+            var schemaElement: ISchemaElement = null;
             var node = new FormNode();
-            var view = null;
+            var view: ITemplate = null;
             var key = null;
 
             // XXX: we now support setup formElement for specific key by customFormItems
@@ -293,8 +342,7 @@ namespace jsonform {
                 formElement.readOnly =
                     formElement.readOnly ||
                     schemaElement.readOnly ||
-                    formElement.readonly ||
-                    schemaElement.readonly;
+                    formElement.readonly;
 
                 // A input field should be marked required unless formElement mark required
                 // or it's an array's item's required field
@@ -328,7 +376,18 @@ namespace jsonform {
                     }
                     return required;
                 }
-                formElement.required = formElement.required === true || schemaElement.required === true || isRequiredField(formElement.key, this.formDesc.schema);
+                
+                // formElement.required = formElement.required === true || schemaElement.required === true || isRequiredField(formElement.key, this.formDesc.schema);
+    
+                /**
+                 * 2016-04-10 Coridyn:
+                 * I've removed the check for `schemaElement.required` because this is
+                 * now shifted up to the parent schemaElement and will be processed
+                 * when appending this `FormNode` to it's parent.
+                 */
+                formElement.required = formElement.required === true || 
+                    // schemaElement.required === true || 
+                    isRequiredField(formElement.key, this.formDesc.schema);
 
                 // Compute the ID of the input field
                 if (!formElement.id) {
@@ -371,7 +430,7 @@ namespace jsonform {
                     }
                 }
 
-                function prepareOptions(formElement, enumValues?) {
+                function prepareOptions(formElement, enumValues?: any[]) {
                     if (formElement.options) {
                         if (Array.isArray(formElement.options)) {
                             formElement.options = formElement.options.map(function(value) {
@@ -417,7 +476,7 @@ namespace jsonform {
                     prepareOptions(formElement);
                 }
                 else if (schemaElement['enum'] || schemaElement.type === 'boolean') {
-                    var enumValues = schemaElement['enum'];
+                    var enumValues: any[] = schemaElement['enum'];
                     if (!enumValues) {
                         enumValues = formElement.type === 'select' ? ['', true, false] : [true, false];
                     }
@@ -436,7 +495,7 @@ namespace jsonform {
                         theItem._jsonform_checkboxes_as_array = 'value';
                     }
                     else {
-                        var enumValues = theItem['enum'];
+                        var enumValues: any[] = theItem['enum'];
                         if (enumValues) {
                             prepareOptions(formElement, enumValues);
                             formElement.optionsAsEnumOrder = true;
@@ -654,7 +713,13 @@ namespace jsonform {
                     }
                 }
             }
-
+    
+            /**
+             * 2016-04-09 Coridyn:
+             * Custom error handling here.
+             * Look into using `displayErrors(..)` to call
+             * `$(this.domRoot).jsonFormErrors(...)` as well.
+             */
             if (errors && !noErrorDisplay) {
                 if (options.displayErrors) {
                     options.displayErrors(errors, this.domRoot);

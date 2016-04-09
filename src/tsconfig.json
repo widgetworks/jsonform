@@ -25,6 +25,7 @@
         "lib/types/IFormElement.ts",
         "lib/types/ISchemaElement.ts",
         "lib/types/ITemplate.ts",
+        "lib/types/Extensions.ts",
         
         "references.d.ts",
         "references-dev.d.ts"

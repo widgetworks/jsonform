@@ -328,6 +328,19 @@ namespace jsonform {
             node.parentNode = this;
             node.childPos = this.children.length;
             this.children.push(node);
+    
+            /**
+             * 2016-04-10
+             * TODO: Update the `required` property of the new child node.
+             * JsonSchemaV4 moves the definition of required properties up
+             * to the parent object - `required` has become a list of children 
+             * which are required.
+             * 
+             * TODO: Need to check how jsonform handles array elements and their children
+             * and if we have access to the parent schemaElement.
+             * Or does it clone the schemaElement and give an instance to each child element???
+             */
+    
             return node;
         }
 

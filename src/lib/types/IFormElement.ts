@@ -22,17 +22,25 @@ namespace jsonform {
          * 
          * Made up of the path of this element in the schema.
          */
-        id: string;
-        key: string;
-        name: string;
+        id?: string;
+        key?: string;
+        name?: string;
         iddot?: string; // Escaped "dotted" version of `id`
         
+        /**
+         * Input control type:
+         *  - checkbox
+         *  - 
+         */
+        type?: string;
+        value?: string;
         title?: string;
         description?: string;
+        required?: boolean;
+        
         readOnly?: boolean;
         'readonly'?: boolean; // For backward compatibility only. Use `readOnly` instead.
         
-        required?: boolean;
         allowEmpty?: boolean;
         
         inline?: boolean;
@@ -58,17 +66,9 @@ namespace jsonform {
         
         
         /**
-         * Input control type:
-         *  - checkbox
-         *  - 
-         */
-        type?: string;
-        
-        
-        /**
          * JSON Schema array item definitions.
          */
-        items?: any[];
+        items?: IFormElement[];
         
         
         /**
@@ -132,7 +132,7 @@ namespace jsonform {
          * If 'all' then show all remaining elements.
          * Otherwise if a number then show that many elements.
          */
-        toggleNext: boolean | 'all' | number;
+        toggleNext?: boolean | 'all' | number;
         
         
         /**
@@ -213,7 +213,7 @@ namespace jsonform {
      * a FormElement instance as well.
      */
     export interface IOtherField {
-        key: string;
+        key?: string;
         
         idx?: number;
         options?: IOption[];
