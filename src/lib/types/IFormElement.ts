@@ -4,9 +4,18 @@ namespace jsonform {
      * IFormElement
      * 
      * Bag of data used to control how this
-     * JSON schema node is rendered in the form
+     * JSON schema node is rendered in the form.
+     * 
+     * This is the type in the top-level `form` property:
+     * 
+     *  {
+     *      "schema": {},
+     *      "form": IFormElement[] [
+     *          
+     *      ]
+     *  }
      */
-    export interface IFormElement extends IControlListener, IOtherField {
+    export interface IFormElement extends IControlListener, IOtherField, IFormElementExtend {
         
         /**
          * Unique identifier for this FormElement.
@@ -16,12 +25,22 @@ namespace jsonform {
         id: string;
         key: string;
         name: string;
+        iddot?: string; // Escaped "dotted" version of `id`
         
+        title?: string;
+        description?: string;
+        readOnly?: boolean;
+        'readonly'?: boolean; // For backward compatibility only. Use `readOnly` instead.
+        
+        required?: boolean;
+        allowEmpty?: boolean;
         
         inline?: boolean;
         activeClass?: string;
         options?: IOption[];
         valueInLegend?: boolean;
+        
+        // CSS class applied to input elements in this element's rendered content.
         fieldHtmlClass?: string;
         
         
@@ -57,8 +76,17 @@ namespace jsonform {
          */
         handlers?: IHandlerMap;
         // NOTE: See additional events in `IControlListener`
-        
-        
+    }
+    
+    
+    /**
+     * Additional properties that may be made available
+     * on the IFormElement, but which aren't part of
+     * the jsonform IFormElement interface.
+     * 
+     * e.g. to be used by custom templates.
+     */
+    export interface IFormElementExtend {
         //---------------------------------------------------------------------
         // Template-specific properties
         
@@ -178,8 +206,15 @@ namespace jsonform {
     
     /**
      * Definition of the `otherField` structure.
+     * 
+     * NOTE: Not sure how this works at runtime.
+     * This is some sort of FormElement configuration option
+     * and the IOtherField is supposed to actually be
+     * a FormElement instance as well.
      */
     export interface IOtherField {
+        key: string;
+        
         idx?: number;
         options?: IOption[];
         optionsAsEnumOrder?: boolean;
@@ -188,6 +223,7 @@ namespace jsonform {
         
         asArrayValue?: boolean;
         novalue?: boolean;
+        notitle?: boolean;
     }
     
 }

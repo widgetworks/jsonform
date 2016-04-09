@@ -786,7 +786,7 @@ namespace jsonform {
 			'template': '<div id="<%= node.id %>"><%= choiceshtml %><%= children %></div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'childTemplate': function(inner, node: FormNode) {
+			'childTemplate': function(inner, data:IRenderData, node: FormNode) {
 				// non-inline style, we do not wrap it.
 				if (!node.formElement.otherField)
 					return inner;
@@ -1173,7 +1173,7 @@ namespace jsonform {
             'template': '<tbody id="<%= id %>"><%= children %></tbody>',
             'fieldtemplate': false,
             'childSelector': '> tbody',
-            'onBeforeRender': function(data, node) {
+            'onBeforeRender': function(data/*: IRenderData*/, node: FormNode) {
                 // Check the index here -> output that in the 
                 //console.log('tableobject: data=', data, '\nnode=', node);
 
@@ -1183,7 +1183,7 @@ namespace jsonform {
                 data.childMap = {
                     simple: [], // a single row holds everything, wrap each item in a <td></td>
                     complex: [] // a single row for every item, wrap each item in a <tr><td colspan="x"></td></tr>
-                }
+                };
 
                 // TODO: Handle multiple <tr> elements for nested tables.
                 // TODO: Need to count the number of 'simple' elements that will form the rows.
@@ -1197,7 +1197,7 @@ namespace jsonform {
                     data.columnCount = simpleCount;
                 }
             },
-            'childTemplate': function(inner, parentNode, data, node, parentData) {
+            'childTemplate': function(inner, data: IRenderData, node: FormNode, parentData: IRenderData, parentNode: FormNode) {
                 //'<td></td>'
                 // TODO: How do we know how many children we have?
 
@@ -1242,7 +1242,7 @@ namespace jsonform {
 			'</div>',
 			'fieldtemplate': true,
 			'array': true,
-			'childTemplate': function(inner, node: FormNode) {
+			'childTemplate': function(inner: string, data: IRenderData, node: FormNode) {
 				if (!node.isReadOnly() && $('').sortable) {
 					// Insert a "draggable" icon
 					// floating to the left of the main element

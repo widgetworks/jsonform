@@ -49,7 +49,7 @@ namespace jsonform {
          * Pointer to the "view" associated with the node, typically the right
          * object in jsonform.elementTypes
          */
-        view /*: ITemplate */ = null;
+        view: ITemplate = null;
 
         /**
          * Node's subtree (if one is defined)
@@ -242,8 +242,8 @@ namespace jsonform {
          * will be set as the parentNode.
          *
          * @function
-         * @param {formNode} New parent node to attach the node to
-         * @return {formNode} Cloned node
+         * @param {FormNode} parentNode New parent node to attach the node to
+         * @return {FormNode} Cloned node
          */
         clone(parentNode: FormNode = this.parentNode): FormNode {
             var node = new FormNode();
@@ -299,19 +299,30 @@ namespace jsonform {
                 return value;
             return this.parentNode.getProperty(prop, true);
         }
-
+        
+        
+        /**
+         * The `readOnly` property is propagated 
+         * to all children as well.
+         * 
+         * Setting `readOnly: true` on this element will
+         * make all children readOnly as well.
+         * 
+         * Returns a truthy/falsy value.
+         */
         isReadOnly() {
             return this.getProperty('readOnly', true);
         }
-
+        
+        
         /**
          * Attaches a child node to the current node.
          *
          * The child node is appended to the end of the list.
          *
          * @function
-         * @param {formNode} node The child node to append
-         * @return {formNode} The inserted node (same as the one given as parameter)
+         * @param {FormNode} node The child node to append
+         * @return {FormNode} The inserted node (same as the one given as parameter)
          */
         appendChild(node) {
             node.parentNode = this;
@@ -355,7 +366,7 @@ namespace jsonform {
          * positions.
          *
          * @function
-         * @param {formNode} node Target node.
+         * @param {FormNode} node Target node.
          */
         moveValuesTo(node) {
             var values = this.getFormValues(node.arrayPath);
@@ -376,7 +387,7 @@ namespace jsonform {
          * formNode's "value" property.
          *
          * @function
-         * @param {formNode} node Target node
+         * @param {FormNode} node Target node
          */
         switchValuesWith(node) {
             var values = this.getFormValues(node.arrayPath);
@@ -447,7 +458,7 @@ namespace jsonform {
          * in an array-like form element. The template is never rendered.
          *
          * @function
-         * @param {formNode} node The child template node to set
+         * @param {FormNode} node The child template node to set
          */
         setChildTemplate(node) {
             this.childTemplate = node;
@@ -513,11 +524,14 @@ namespace jsonform {
          * @param {Object} values Previously submitted values for the form
          * @param {Boolean} ignoreDefaultValues Ignore default values defined in the
          *  schema when set.
-         * @param {Integer} the top array level of the default value scope, used when
+         * @param {number} topDefaultArrayLevel the top array level of the default value scope, used when
          *  add new item into array, at that time won't consider all default values
          *  above the array schema level.
+         *  
+         * 2016-04-09
+         * Coridyn: candidate for refactoring
          */
-        computeInitialValues(values, ignoreDefaultValues: boolean, topDefaultArrayLevel = 0) {
+        computeInitialValues(values, ignoreDefaultValues: boolean = false, topDefaultArrayLevel = 0) {
             var self = this;
             var node = null;
             var nbChildren = 1;
@@ -549,9 +563,13 @@ namespace jsonform {
 
             // Prepare special function to compute the value of another field
             formData.getValue = function(key) {
-                return getInitialValue(self.ownerTree.formDesc,
-                    key, self.arrayPath,
-                    formData, !!values);
+                return getInitialValue(
+                    self.ownerTree.formDesc,
+                    key,
+                    self.arrayPath,
+                    formData,
+                    !!values
+                );
             };
 
             if (this.formElement) {
@@ -794,6 +812,9 @@ namespace jsonform {
          *  in an array)
          * @return {Object} The object that follows the data schema and matches the
          *  values entered by the user.
+         *  
+         * 2016-04-09
+         * Coridyn: candidate for refactoring
          */
         getFormValues(updateArrayPath) {
             // The values object that will be returned
@@ -1067,7 +1088,23 @@ namespace jsonform {
                     this.el = $(this.el).parent().get(0);
                 }
             }
-
+            
+            /**
+             * 2016-04-09
+             * 
+             * NOTE: The original `_.each()` invocation here was missing
+             * the correct lexical scope!
+             * 
+             * This meant the `this.el` was often undefined and `domNode` 
+             * was being passed through instead.
+             * 
+             * This means the `ITemplate#getElement()` method probably
+             * has the wrong lookup now this is fixed (the jquery 
+             * lookup path will have changed).
+             * 
+             * Need to review and test to make sure all elements are 
+             * doing the lookup on the correct element.
+             */
             _.each(this.children, (child) => {
                 child.updateElement(this.el || domNode);
             });
@@ -1136,7 +1173,7 @@ namespace jsonform {
                  * 
                  * This lets us do more-specific processing for each child.
                  */
-                template = this.parentNode.view.childTemplate(template, this.parentNode, data, this, parentData);
+                template = this.parentNode.view.childTemplate(template, data, this, parentData, this.parentNode);
                 /* END */
             }
 
@@ -1154,7 +1191,7 @@ namespace jsonform {
                 if (child.parentNode &&
                     child.parentNode.view &&
                     child.parentNode.view.afterChildTemplate) {
-                    renderedChild = child.parentNode.view.afterChildTemplate(renderedChild, child.parentNode, child);
+                    renderedChild = child.parentNode.view.afterChildTemplate(renderedChild, child, child.parentNode);
                 }
                 childrenhtml += renderedChild;
             });
@@ -1208,6 +1245,9 @@ namespace jsonform {
          * form element if they exist (starting with that of the view)
          *
          * @function
+         * 
+         * 2016-04-09
+         * Coridyn: candidate for refactoring
          */
         enhance() {
             var node = this;
@@ -1525,15 +1565,24 @@ namespace jsonform {
      * be hard to come up with an automated course of action to "fix" the value.
      *
      * @function
-     * @param {Object} formObject The JSON Form object
+     * @param {Object} formDesc The JSON Form object
      * @param {String} key The generic key path (e.g. foo[].bar.baz[])
      * @param {Array(Number)} arrayPath The array path that identifies
      *  the unique value in the submitted form (e.g. [1, 3])
      * @param {Object} tpldata Template data object
      * @param {Boolean} usePreviousValues true to use previously submitted values
      *  if defined.
+     *  
+     * 2016-04-09
+     * Coridyn: candidate for refactoring
      */
-    export function getInitialValue(formObject, key, arrayPath, tpldata, usePreviousValues) {
+    export function getInitialValue(
+        formDesc: IFormDescriptor,
+        key: string,
+        arrayPath: number[],
+        tpldata: IFormTemplateData,
+        usePreviousValues: boolean
+    ) {
         var value = null;
 
         // Complete template data for template function
@@ -1542,7 +1591,7 @@ namespace jsonform {
             (arrayPath ? arrayPath[arrayPath.length - 1] : 1);
         tpldata.value = util.isSet(tpldata.value) ? tpldata.value : '';
         tpldata.getValue = tpldata.getValue || function(key) {
-            return getInitialValue(formObject, key, arrayPath, tpldata, usePreviousValues);
+            return getInitialValue(formDesc, key, arrayPath, tpldata, usePreviousValues);
         };
 
         // Helper function that returns the form element that explicitly
@@ -1566,12 +1615,12 @@ namespace jsonform {
             });
             return formElement;
         };
-        var formElement = getFormElement(formObject.form || [], key);
-        var schemaElement = util.getSchemaKey(formObject.schema.properties, key);
+        var formElement = getFormElement(formDesc.form || [], key);
+        var schemaElement = util.getSchemaKey(formDesc.schema.properties, key);
 
-        if (usePreviousValues && formObject.value) {
+        if (usePreviousValues && formDesc.value) {
             // If values were previously submitted, use them directly if defined
-            value = jsonform.util.getObjKey(formObject.value, applyArrayPath(key, arrayPath));
+            value = jsonform.util.getObjKey(formDesc.value, applyArrayPath(key, arrayPath));
         }
         if (!util.isSet(value)) {
             if (formElement && (typeof formElement['value'] !== 'undefined')) {

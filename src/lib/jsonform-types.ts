@@ -38,6 +38,17 @@ declare namespace jsonform {
         escape: (content: string) => string;
         
         children: string;   // Rendered child content
+        
+        /**
+         * Class applied to input elements in the template.
+         * 
+         * This value is set in this order (highest precedence
+         * to lowest)
+         * 
+         *  - `FormNode.formElement.fieldHtmlClass`
+         *  - `IFormDescriptor.params.fieldHtmlClass`
+         *  - ''
+         */
         fieldHtmlClass: string;
     }
     

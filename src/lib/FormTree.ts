@@ -17,7 +17,7 @@ namespace jsonform {
     export class FormTree {
         
         // From `formTree` constructor
-        root: /*jsonform.formNode*/ any = null;
+        root: FormNode = null;
         formDesc = null;
         
         // Used by class
@@ -40,6 +40,10 @@ namespace jsonform {
          * a call to "render".
          *
          * @function
+         * 
+         * 
+         * 2016-04-09
+         * Coridyn: candidate for refactoring
          */
         initialize(formDesc) {
             formDesc = formDesc || {};
@@ -50,8 +54,9 @@ namespace jsonform {
 
             var defaultClasses: IFormClasses = getDefaultClasses(this.formDesc.isBootstrap2 || jsonform.isBootstrap2);
             this.defaultClasses = _.clone(defaultClasses);
-            if (this.formDesc.defaultClasses)
+            if (this.formDesc.defaultClasses){
                 _.extend(this.defaultClasses, this.formDesc.defaultClasses);
+            }
 
             // Compute form prefix if no prefix is given.
             this.formDesc.prefix = this.formDesc.prefix ||
@@ -217,9 +222,12 @@ namespace jsonform {
          * @function
          * @param {Object} formElement JSONForm element to render
          * @param {Object} context The parsing context (the array depth in particular)
-         * @return {Object} The node that matches the element.
+         * @return {FormNode} The node that matches the element.
+         * 
+         * 2016-04-09
+         * Coridyn: candidate for refactoring
          */
-        buildFromLayout(formElement, context?) {
+        buildFromLayout(formElement: IFormElement, context?): FormNode {
             var schemaElement = null;
             var node = new FormNode();
             var view = null;
@@ -517,16 +525,22 @@ namespace jsonform {
                 }, this);
             }
             else if (formElement.otherField) {
-                var item = formElement.otherField;
+                var item: /*IOtherField*/ any = formElement.otherField;
                 if (_.isString(item)) {
                     item = formElement.otherField = { key: item, notitle: true };
                 }
                 else if (item.notitle === undefined) {
                     item.notitle = true;
                 }
-                if (item.inline === undefined)
+                if (item.inline === undefined){
                     item.inline = formElement.inline;
-                node.appendChild(this.buildFromLayout(item));
+                }
+                
+                // Print a warning so we know we need to investigate
+                // how this is supposed to work.
+                console.warn('(FormTree) buildFromLayout: processing `formElement.otherField` but this hasn\'t been fully checked yet.\n\nMight need to raise an issue in Github for this with an example of how `otherField` is being used.');
+                var tempItem = <IFormElement>item;
+                node.appendChild(this.buildFromLayout(tempItem));
             }
 
             return node;
@@ -548,7 +562,12 @@ namespace jsonform {
          * @function
          */
         computeInitialValues() {
-            this.root.computeInitialValues(this.formDesc.value);
+            /**
+             * 2016-04-09
+             * TODO: Check if `formDesc.value` is ever set.
+             */
+            var value = (<any>this.formDesc).value;
+            this.root.computeInitialValues(value);
         }
 
 
