@@ -174,9 +174,19 @@ $('document').ready(function () {
       $('#result-form').jsonForm(createdForm);
     }
     catch (e) {
-      $('#result').html('<pre>Entered content is not yet a valid' +
-        ' JSON Form object.\n\nThe JSON Form library returned:\n' +
-        e + '</pre>');
+      var stack = '';
+      if (e.stack){
+        stack = e.stack;
+      }
+      
+      $('#result').html(
+`<pre>Entered content is not yet a valid JSON Form object.
+
+The JSON Form library returned:
+${e}</pre>
+<pre>${stack}</pre>
+`
+      );
       return;
     }
   };
