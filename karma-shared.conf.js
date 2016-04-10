@@ -19,7 +19,7 @@ module.exports = function (config) {
 		],
 		exclude: ['**/*.js___jb_bak___', '**/*.d.ts'],
 		reporters: [
-			'karma-jasmine-html-sourcemaps',
+			//'karma-jasmine-html-sourcemaps',
 			'dots',
 			'growl'
 		],

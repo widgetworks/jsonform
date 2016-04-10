@@ -253,15 +253,81 @@ describe('FormTree', function(){
      */
     describe('#_convertSchemaV3ToV4()', function(){
         
-        var _schema: jsonform.IFormDescriptor;
+        var schema;
         
         beforeEach(function(){
-            
+            schema = {
+                properties: {}
+            };
         });
         
         
+        it('convert `readonly` to `readOnly`', function(){
+        	_.extend(schema, {
+                readonly: true
+            });
+            var result = formTree._convertSchemaV3ToV4(schema);
+            
+            expect(result).toEqual(jasmine.objectContaining({
+                readOnly: true
+            }));
+            expect(result.readonly).toBeUndefined();
+        });
         
-        // in and out expectations.
+        
+        /**
+         * convert `required`
+         */
+        describe('convert `required`', function(){
+            
+        	
+        	
+        });
+        // End of 'convert `required`'.
+        
+        
+        it('does not alter exiting V4 objects', function(){
+        	schema = {
+              "title": "CustomerV4",
+              "description": "json-schema v4 style 'required'",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "title": "Name",
+                  "type": "string"
+                },
+                "address": {
+                  "title": "Address",
+                  "type": "object",
+                  "properties": {
+                    "city": {
+                      "title": "City",
+                      "type": "string"
+                    },
+                    "street": {
+                      "title": "Street",
+                      "type": "string"
+                    },
+                    "zip": {
+                      "title": "Zip",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "steet",
+                    "city"
+                  ]
+                }
+              },
+              "required": [
+                "name"
+              ]
+            };
+            
+            var expected = {};
+            
+            
+        });
         
     });
     // End of '#_convertSchemaV3ToV4()'.

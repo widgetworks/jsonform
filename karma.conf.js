@@ -6,11 +6,14 @@ module.exports = function (config) {
 		files: [
             // Dependencies
             "deps/jquery.min.js"
-            ,"deps/underscore-min.js"
+            ,"bower_components/lodash/dist/lodash.js"
             ,"deps/opt/ZSchema-browser-min.js"
             
             // Library under test
-            ,"build/jsonform.js"
+            ,{
+				pattern: "build/jsonform.js",
+				nocache: true
+			}
             
 			// {
 			// 	// Serve fixture data.
@@ -26,7 +29,10 @@ module.exports = function (config) {
 			// Add helpers.
 			,'build/test/helpers/**/*.js'
             
-			,'build/test/**/*.spec.js'
+			,{
+				pattern: 'build/test/**/*.spec.js',
+				nocache: true
+			}
 		]
 	});
 };
