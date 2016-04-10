@@ -188,8 +188,7 @@ describe('FormTree', function(){
                     // _schema.schema:
                     jasmine.objectContaining({
                         definitions: jasmine.any(Object),
-                        properties: jasmine.any(Object),
-                        required: jasmine.any(Array)
+                        properties: jasmine.any(Object)
                     }),
                     
                     
@@ -280,53 +279,214 @@ describe('FormTree', function(){
          */
         describe('convert `required`', function(){
             
-        	
-        	
+            it('convert boolean required to parent string list', function(){
+                
+            	// V3 schema
+                schema = {
+                    "title": "Customer",
+                    "description": "json-schema v3 style 'required'",
+                    "type": "object",
+                    "required": true,
+                    "properties": {
+                        "name": {
+                            "required": true,
+                            "title": "Name",
+                            "type": "string"
+                        },
+                        "address": {
+                            "title": "Address",
+                            "type": "object",
+                            "properties": {
+                                "city": {
+                                    "required": true,
+                                    "title": "City",
+                                    "type": "string"
+                                },
+                                "street": {
+                                    "required": true,
+                                    "title": "Street",
+                                    "type": "string"
+                                },
+                                "zip": {
+                                    "title": "Zip",
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "phoneNumber": {
+                            "type": "array",
+                            "required": true,
+                            "items": {
+                                "type": "object",
+                                "required": true,
+                                "properties": {
+                                    "location": {
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "required": true,
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                var v4Result = {
+                    "title": "Customer",
+                    "description": "json-schema v3 style 'required'",
+                    "type": "object",
+                    "required": ["name", "phoneNumber"],
+                    "properties": {
+                        "name": {
+                            "title": "Name",
+                            "type": "string"
+                        },
+                        "address": {
+                            "title": "Address",
+                            "type": "object",
+                            "required": ["city", "street"],
+                            "properties": {
+                                "city": {
+                                    "title": "City",
+                                    "type": "string"
+                                },
+                                "street": {
+                                    "title": "Street",
+                                    "type": "string"
+                                },
+                                "zip": {
+                                    "title": "Zip",
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "phoneNumber": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["location", "code"],
+                                "properties": {
+                                    "location": {
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                
+                var result = formTree._convertSchemaV3ToV4(schema);
+                expect(result).toEqual(v4Result);
+            	
+            });
+            
+            
+            it('throws error if `required` is not boolean or array', function(){
+                schema = {
+                    properties: {
+                        customer: {
+                            "title": "Customer",
+                            "description": "json-schema v3 style 'required'",
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "required": {},
+                                    "title": "Name",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                expect(function(){
+                    formTree._convertSchemaV3ToV4(schema);
+                }).toThrowError('field "name"\'s required property should be either boolean or array of strings');
+            });
+            
+            
+            it('throws error if array `items` is not an object', function(){
+                schema = {
+                    properties: {
+                        customer: {
+                            "title": "Customer",
+                            "description": "json-schema v3 style 'required'",
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "required": ["location", "code"],
+                                    "properties": {
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "code": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                };
+                
+                expect(function(){
+                    formTree._convertSchemaV3ToV4(schema);
+                }).toThrowError('the items property of array property "customer" in the schema definition must be an object');
+            });
+            
         });
         // End of 'convert `required`'.
         
         
         it('does not alter exiting V4 objects', function(){
         	schema = {
-              "title": "CustomerV4",
-              "description": "json-schema v4 style 'required'",
-              "type": "object",
-              "properties": {
-                "name": {
-                  "title": "Name",
-                  "type": "string"
-                },
-                "address": {
-                  "title": "Address",
-                  "type": "object",
-                  "properties": {
-                    "city": {
-                      "title": "City",
-                      "type": "string"
+                "title": "CustomerV4",
+                "description": "json-schema v4 style 'required'",
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "title": "Name",
+                        "type": "string"
                     },
-                    "street": {
-                      "title": "Street",
-                      "type": "string"
-                    },
-                    "zip": {
-                      "title": "Zip",
-                      "type": "string"
+                    "address": {
+                        "title": "Address",
+                        "type": "object",
+                        "required": [
+                            "steet",
+                            "city"
+                        ],
+                        "properties": {
+                            "city": {
+                                "title": "City",
+                                "type": "string"
+                            },
+                            "street": {
+                                "title": "Street",
+                                "type": "string"
+                            },
+                            "zip": {
+                                "title": "Zip",
+                                "type": "string"
+                            }
+                        }
                     }
-                  },
-                  "required": [
-                    "steet",
-                    "city"
-                  ]
                 }
-              },
-              "required": [
-                "name"
-              ]
             };
+            var v4Result = _.cloneDeep(schema);
             
-            var expected = {};
-            
-            
+            var result = formTree._convertSchemaV3ToV4(schema);
+            expect(result).toEqual(v4Result);
         });
         
     });

@@ -151,37 +151,49 @@ namespace jsonform {
             }
             
             if (schema.properties) {
-                var required = [].concat(schema.required);
-                
+                var required = [];
+                if (_.isArray(schema.required)){
+                    required = schema.required;
+                }
+    
+                /**
+                 * Add each required child element to our `required` list.
+                 */
                 for (var field in schema.properties) {
-                    var fieldSchema/*: ISchemaElement*/ = schema.properties[field];
-                    if (fieldSchema.required === true) {
+                    var childSchema/*: ISchemaElement*/ = schema.properties[field];
+                    if (childSchema.required === true) {
                         if (required.indexOf(field) < 0){
                             required.push(field);
                         }
+                        
+                        // Remove `required` property from this child.
+                        delete childSchema.required;
                     }
-                    else if (fieldSchema.required !== undefined && fieldSchema.required !== false && !Array.isArray(fieldSchema.required)){
-                        throw new Error('field ' + field + "'s required property should be either boolean or array of strings");
+                    else if (childSchema.required !== undefined && childSchema.required !== false && !Array.isArray(childSchema.required)){
+                        throw new Error('field "' + field + '"\'s required property should be either boolean or array of strings');
                     }
                         
-                    if (fieldSchema.type === 'object') {
-                        if (processedSchemaNodes.indexOf(fieldSchema) < 0) {
-                            processedSchemaNodes.push(fieldSchema);
-                            this._convertSchemaV3ToV4(fieldSchema, processedSchemaNodes);
+                    if (childSchema.type === 'object') {
+                        // Recurse into child objects.
+                        if (processedSchemaNodes.indexOf(childSchema) < 0) {
+                            processedSchemaNodes.push(childSchema);
+                            this._convertSchemaV3ToV4(childSchema, processedSchemaNodes);
                         }
                     }
                     else {
-                        delete fieldSchema.required;
+                        // Remove required property from non-object types.
+                        delete childSchema.required;
                     }
                     
-                    if (fieldSchema.type === 'array' && fieldSchema.items) {
-                        if (Array.isArray(fieldSchema.items)) {
-                            throw new Error('the items property of array property ' + field + ' in the schema definition must be an object');
+                    if (childSchema.type === 'array' && childSchema.items) {
+                        if (Array.isArray(childSchema.items)) {
+                            throw new Error('the items property of array property "' + field + '" in the schema definition must be an object');
                         }
-                        if (fieldSchema.items.type === 'object') {
-                            if (processedSchemaNodes.indexOf(fieldSchema.items) < 0) {
-                                processedSchemaNodes.push(fieldSchema.items);
-                                this._convertSchemaV3ToV4(fieldSchema.items, processedSchemaNodes);
+                        
+                        if (childSchema.items.type === 'object') {
+                            if (processedSchemaNodes.indexOf(childSchema.items) < 0) {
+                                processedSchemaNodes.push(childSchema.items);
+                                this._convertSchemaV3ToV4(childSchema.items, processedSchemaNodes);
                             }
                         }
                     }
