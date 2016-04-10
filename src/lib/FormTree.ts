@@ -137,71 +137,71 @@ namespace jsonform {
          */
         _convertSchemaV3ToV4(schema: any, processedSchemaNodes: any[] = []){
             if (!schema){
-                    // return schema;
-                    return;
-                }
-                
-                var omitList: string[] = [];
-                
-                if (_.has(schema, 'readonly')){
-                    omitList.push('readonly');
-                    schema.readOnly = schema['readonly'];
-                }
-                
-                if (schema.properties) {
-                    var required = [].concat(schema.required);
-                    
-                    for (var field in schema.properties) {
-                        var fieldSchema/*: ISchemaElement*/ = schema.properties[field];
-                        if (fieldSchema.required === true) {
-                            if (required.indexOf(field) < 0){
-                                required.push(field);
-                            }
-                        }
-                        else if (fieldSchema.required !== undefined && fieldSchema.required !== false && !Array.isArray(fieldSchema.required)){
-                            throw new Error('field ' + field + "'s required property should be either boolean or array of strings");
-                        }
-                            
-                        if (fieldSchema.type === 'object') {
-                            if (processedSchemaNodes.indexOf(fieldSchema) < 0) {
-                                processedSchemaNodes.push(fieldSchema);
-                                this._convertSchemaV3ToV4(fieldSchema, processedSchemaNodes);
-                            }
-                        }
-                        else {
-                            delete fieldSchema.required;
-                        }
-                        
-                        if (fieldSchema.type === 'array' && fieldSchema.items) {
-                            if (Array.isArray(fieldSchema.items)) {
-                                throw new Error('the items property of array property ' + field + ' in the schema definition must be an object');
-                            }
-                            if (fieldSchema.items.type === 'object') {
-                                if (processedSchemaNodes.indexOf(fieldSchema.items) < 0) {
-                                    processedSchemaNodes.push(fieldSchema.items);
-                                    this._convertSchemaV3ToV4(fieldSchema.items, processedSchemaNodes);
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (required.length > 0){
-                        schema.required = required;
-                    } else {
-                        omitList.push('required');
-                        
-                        delete schema.required;
-                    }
-                }
-    
-                /**
-                 * TODO: Duplicate the object and omit the unnecessary properties.
-                 * 
-                 * TODO: This might mess with the circular-reference detection...
-                 * Maybe just do a deep clone right at the end?
-                 */
-                // schema = _.omit(schema, omitList);
                 // return schema;
+                return;
+            }
+            
+            var omitList: string[] = [];
+            
+            if (_.has(schema, 'readonly')){
+                omitList.push('readonly');
+                schema.readOnly = schema['readonly'];
+            }
+            
+            if (schema.properties) {
+                var required = [].concat(schema.required);
+                
+                for (var field in schema.properties) {
+                    var fieldSchema/*: ISchemaElement*/ = schema.properties[field];
+                    if (fieldSchema.required === true) {
+                        if (required.indexOf(field) < 0){
+                            required.push(field);
+                        }
+                    }
+                    else if (fieldSchema.required !== undefined && fieldSchema.required !== false && !Array.isArray(fieldSchema.required)){
+                        throw new Error('field ' + field + "'s required property should be either boolean or array of strings");
+                    }
+                        
+                    if (fieldSchema.type === 'object') {
+                        if (processedSchemaNodes.indexOf(fieldSchema) < 0) {
+                            processedSchemaNodes.push(fieldSchema);
+                            this._convertSchemaV3ToV4(fieldSchema, processedSchemaNodes);
+                        }
+                    }
+                    else {
+                        delete fieldSchema.required;
+                    }
+                    
+                    if (fieldSchema.type === 'array' && fieldSchema.items) {
+                        if (Array.isArray(fieldSchema.items)) {
+                            throw new Error('the items property of array property ' + field + ' in the schema definition must be an object');
+                        }
+                        if (fieldSchema.items.type === 'object') {
+                            if (processedSchemaNodes.indexOf(fieldSchema.items) < 0) {
+                                processedSchemaNodes.push(fieldSchema.items);
+                                this._convertSchemaV3ToV4(fieldSchema.items, processedSchemaNodes);
+                            }
+                        }
+                    }
+                }
+                
+                if (required.length > 0){
+                    schema.required = required;
+                } else {
+                    omitList.push('required');
+                    
+                    delete schema.required;
+                }
+            }
+
+            /**
+             * TODO: Duplicate the object and omit the unnecessary properties.
+             * 
+             * TODO: This might mess with the circular-reference detection...
+             * Maybe just do a deep clone right at the end?
+             */
+            // schema = _.omit(schema, omitList);
+            // return schema;
         }
     
     
