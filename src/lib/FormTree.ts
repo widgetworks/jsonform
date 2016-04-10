@@ -287,16 +287,23 @@ namespace jsonform {
                         if (this.formDesc.nonDefaultFormItems && this.formDesc.nonDefaultFormItems.indexOf(key) >= 0){
                             return;
                         }
-                        
+    
+                        /**
+                         * 2016-04-10
+                         * We might need to try and interpole the `keyOnParent`
+                         * because the key might be a complex 'a.b.c[2]' path.
+                         */
                         this.root.appendChild(this.buildFromLayout({
-                            key: key
+                            key: key,
+                            keyOnParent: key
                         }));
                     });
                 }
                 else {
                     if (_.isString(formElement)) {
                         formElement = {
-                            key: formElement
+                            key: formElement,
+                            keyOnParent: formElement
                         };
                     }
                     this.root.appendChild(this.buildFromLayout(formElement));
@@ -359,7 +366,8 @@ namespace jsonform {
                 // Retrieve the element from the JSON schema
                 schemaElement = util.getSchemaKey(
                     this.formDesc.schema.properties,
-                    formElement.key);
+                    formElement.key
+                );
                 if (!schemaElement) {
                     // The JSON Form is invalid!
                     throw new Error('The JSONForm object references the schema key "' +
@@ -422,16 +430,16 @@ namespace jsonform {
                 }
                 
                 // formElement.required = formElement.required === true || schemaElement.required === true || isRequiredField(formElement.key, this.formDesc.schema);
-    
+                
                 /**
                  * 2016-04-10 Coridyn:
                  * I've removed the check for `schemaElement.required` because this is
                  * now shifted up to the parent schemaElement and will be processed
                  * when appending this `FormNode` to it's parent.
                  */
-                formElement.required = formElement.required === true || 
-                    // schemaElement.required === true || 
-                    isRequiredField(formElement.key, this.formDesc.schema);
+                // formElement.required = formElement.required === true || 
+                //     // schemaElement.required === true || 
+                //     isRequiredField(formElement.key, this.formDesc.schema);
 
                 // Compute the ID of the input field
                 if (!formElement.id) {
@@ -474,52 +482,13 @@ namespace jsonform {
                     }
                 }
 
-                function prepareOptions(formElement, enumValues?: any[]) {
-                    if (formElement.options) {
-                        if (Array.isArray(formElement.options)) {
-                            formElement.options = formElement.options.map(function(value) {
-                                return util.hasOwnProperty(value, 'value') ? value : {
-                                    value: value,
-                                    title: value
-                                };
-                            });
-                        }
-                        else if (typeof formElement.options === 'object') {
-                            // titleMap like options
-                            formElement.options = Object.keys(formElement.options).map(function(value) {
-                                return {
-                                    value: value,
-                                    title: formElement.options[value]
-                                };
-                            });
-                        }
-                    }
-                    else if (formElement.titleMap) {
-                        formElement.options = _.map(enumValues, function(value) {
-                            var title = value.toString();
-                            return {
-                                value: value,
-                                title: util.hasOwnProperty(formElement.titleMap, title) ? formElement.titleMap[title] : title
-                            };
-                        });
-                    }
-                    else {
-                        formElement.options = enumValues.map(function(value) {
-                            return {
-                                value: value,
-                                title: value.toString()
-                            };
-                        });
-                    }
-                }
                 // Unless overridden in the definition of the form element (or unless
                 // there's a titleMap defined), use the enumeration list defined in
                 // the schema
                 if (formElement.options) {
                     // FIXME: becareful certin type form element may has special format for options
-                    prepareOptions(formElement);
-                }
-                else if (schemaElement['enum'] || schemaElement.type === 'boolean') {
+                    this._prepareOptions(formElement);
+                } else if (schemaElement['enum'] || schemaElement.type === 'boolean') {
                     var enumValues: any[] = schemaElement['enum'];
                     if (!enumValues) {
                         enumValues = formElement.type === 'select' ? ['', true, false] : [true, false];
@@ -527,7 +496,7 @@ namespace jsonform {
                     else {
                         formElement.optionsAsEnumOrder = true;
                     }
-                    prepareOptions(formElement, enumValues);
+                    this._prepareOptions(formElement, enumValues);
                 }
 
                 // Flag a list of checkboxes with multiple choices
@@ -535,35 +504,28 @@ namespace jsonform {
                     var theItem = Array.isArray(schemaElement.items) ? schemaElement.items[0] : schemaElement.items;
                     if (formElement.options) {
                         // options only but no enum mode, since no enum, we can use only the value mode
-                        prepareOptions(formElement);
+                        this._prepareOptions(formElement);
                         theItem._jsonform_checkboxes_as_array = 'value';
                     }
                     else {
                         var enumValues: any[] = theItem['enum'];
                         if (enumValues) {
-                            prepareOptions(formElement, enumValues);
+                            this._prepareOptions(formElement, enumValues);
                             formElement.optionsAsEnumOrder = true;
                             theItem._jsonform_checkboxes_as_array = formElement.type === 'checkboxes' ? true : 'value';
                         }
                     }
                 }
+                
                 if (formElement.getValue === 'tagsinput') {
                     schemaElement._jsonform_get_value_by_tagsinput = 'tagsinput';
                 }
-
-                // If the form element targets an "object" in the JSON schema,
-                // we need to recurse through the list of children to create an
-                // input field per child property of the object in the JSON schema
-                if (schemaElement.type === 'object') {
-                    _.each(schemaElement.properties, (prop, propName) => {
-                        var key = formElement.key + '.' + propName;
-                        if (this.formDesc.nonDefaultFormItems && this.formDesc.nonDefaultFormItems.indexOf(key) >= 0)
-                            return;
-                        node.appendChild(this.buildFromLayout({
-                            key: key
-                        }));
-                    });
-                }
+            } else {
+                // Debug: find out what is creating nodes without keys.
+                // Answer: Elements defined in the top-level `{ form: [] }`
+                // list - i.e. controls that are shown on-screen but aren't linked
+                // with a schema element.
+                var a = true;
             }
 
             if (!formElement.type) {
@@ -588,8 +550,7 @@ namespace jsonform {
                         'element in the JSON schema (key: "' + formElement.key + '") ' +
                         'and that should not based on its type ("' + formElement.type + '")');
                 }
-            }
-            else {
+            } else {
                 // The form element is not linked to an element in the schema.
                 // This means the form element must be a "container" element,
                 // and must not define an input field.
@@ -608,6 +569,32 @@ namespace jsonform {
             node.schemaElement = schemaElement;
             node.view = view;
             node.ownerTree = this;
+    
+    
+            /**
+             * 2016-04-10
+             * Process child elements after linking up the
+             * formElement and schemaElement with the FormNode instance.
+             */
+            if (schemaElement){
+                // If the form element targets an "object" in the JSON schema,
+                // we need to recurse through the list of children to create an
+                // input field per child property of the object in the JSON schema
+                if (schemaElement.type === 'object') {
+                    _.each(schemaElement.properties, (prop, propName) => {
+                        var key = formElement.key + '.' + propName;
+                        if (this.formDesc.nonDefaultFormItems && this.formDesc.nonDefaultFormItems.indexOf(key) >= 0){
+                            return;
+                        }
+                            
+                        node.appendChild(this.buildFromLayout({
+                            key: key,
+                            keyOnParent: propName
+                        }));
+                    });
+                }
+            }
+            
 
             // Set event handlers
             if (!formElement.handlers) {
@@ -617,13 +604,17 @@ namespace jsonform {
             // Parse children recursively
             if (node.view.array) {
                 // Do not create childTemplate until we first use it.
-            }
-            else if (formElement.items) {
+            } else if (formElement.items) {
                 // The form element defines children elements
                 _.each(formElement.items, (item) => {
                     if (_.isString(item)) {
                         item = { key: item };
                     }
+                    
+                    /**
+                     * Array elements don't have a 'keyOnParent' value,
+                     * that only applies to direct children of objects.
+                     */
                     node.appendChild(this.buildFromLayout(item));
                 });
             }
@@ -647,6 +638,61 @@ namespace jsonform {
             }
 
             return node;
+        }
+    
+    
+        /**
+         * Process select menu options into a list of
+         * 
+         *     [
+         *         {
+         *             value: any;
+         *             title: string;
+         *         },
+         *         ...
+         *     ]
+         * 
+         * @param formElement
+         * @param enumValues
+         * @private
+         */
+        _prepareOptions(formElement, enumValues?: any[]) {
+            if (formElement.options) {
+                if (Array.isArray(formElement.options)) {
+                    formElement.options = formElement.options.map(function(value) {
+                        return util.hasOwnProperty(value, 'value') ? value : {
+                            value: value,
+                            title: value
+                        };
+                    });
+                }
+                else if (typeof formElement.options === 'object') {
+                    // titleMap like options
+                    formElement.options = Object.keys(formElement.options).map(function(value) {
+                        return {
+                            value: value,
+                            title: formElement.options[value]
+                        };
+                    });
+                }
+            }
+            else if (formElement.titleMap) {
+                formElement.options = _.map(enumValues, function(value) {
+                    var title = value.toString();
+                    return {
+                        value: value,
+                        title: util.hasOwnProperty(formElement.titleMap, title) ? formElement.titleMap[title] : title
+                    };
+                });
+            }
+            else {
+                formElement.options = enumValues.map(function(value) {
+                    return {
+                        value: value,
+                        title: value.toString()
+                    };
+                });
+            }
         }
 
 

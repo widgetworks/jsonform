@@ -71,7 +71,7 @@ namespace jsonform {
 			'<%= (node.schemaElement && node.schemaElement.maxLength ? " maxlength=\'" + node.schemaElement.maxLength + "\'" : "") %>' +
 			'<%= (node.required ? " required=\'required\'" : "") %>' +
 			'<%= (node.placeholder? " placeholder=" + \'"\' + escape(node.placeholder) + \'"\' : "")%>' +
-			' />',
+			' /> <pre>required=<%= node.required %></pre> ',
 			'fieldtemplate': true,
 			'inputfield': true,
 			'onInsert': function(evt, node: FormNode) {

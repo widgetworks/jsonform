@@ -24,6 +24,8 @@ namespace jsonform {
          */
         id?: string;
         key?: string;
+        keyOnParent?: string;   // name of property on parent object pointing to this item.
+        
         name?: string;
         iddot?: string; // Escaped "dotted" version of `id`
         

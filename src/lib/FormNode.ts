@@ -43,7 +43,7 @@ namespace jsonform {
          * Link to the schema element that describes the node's value constraints
          * (note the schema element is shared among nodes in arrays)
          */
-        schemaElement /*: ISchemaElement */ = null;
+        schemaElement: ISchemaElement = null;
 
         /**
          * Pointer to the "view" associated with the node, typically the right
@@ -226,10 +226,10 @@ namespace jsonform {
         
         description: string;
         helpvalue: string;
-        disabled: string;
-        required: string;
+        disabled: boolean;
+        required: boolean;
         placeholder: string;
-        readOnly: string;
+        readOnly: boolean;
         
         // End of additional properties
         //---------------------------------------------------------------------
@@ -324,7 +324,7 @@ namespace jsonform {
          * @param {FormNode} node The child node to append
          * @return {FormNode} The inserted node (same as the one given as parameter)
          */
-        appendChild(node) {
+        appendChild(node: FormNode) {
             node.parentNode = this;
             node.childPos = this.children.length;
             this.children.push(node);
@@ -340,6 +340,8 @@ namespace jsonform {
              * and if we have access to the parent schemaElement.
              * Or does it clone the schemaElement and give an instance to each child element???
              */
+            node.required = this._isChildRequired(node);
+            console.log(`(FormNode) appendChild: keyOnParent="${node.formElement.keyOnParent}", required?=${node.required}`);
     
             return node;
         }
@@ -359,6 +361,28 @@ namespace jsonform {
 
             // Remove the child from the array
             return this.children.pop();
+        }
+        
+        
+        /**
+         * Return true if the child is considered
+         * to be required when appended to this
+         * FormNode.
+         * 
+         * @param childNode
+         * @private
+         */
+        _isChildRequired(childNode: FormNode): boolean{
+            var isRequired = childNode.formElement.required;
+            
+            // Only check schemaElement if the formElement doesn't already have a value.
+            if (!_.isBoolean(isRequired) && this.schemaElement){
+                // If we are the root element then we don't have a `schemaElement`.
+                var childKey = childNode.formElement.keyOnParent;
+                isRequired = this.schemaElement.required.indexOf(childKey) >= 0;
+            }
+            
+            return isRequired;
         }
 
 
@@ -634,7 +658,7 @@ namespace jsonform {
                     'helpvalue',
                     'value',
                     'disabled',
-                    'required',
+                    // 'required',
                     'placeholder',
                     'readOnly'
                 ], (prop) => {
@@ -986,6 +1010,8 @@ namespace jsonform {
          *  node is inserted at the right position based on its "childPos" property.
          */
         render(el?/*: HTMLElement*/) {
+            console.log(`(FormNode) render: ${this.key}`);
+            
             var html = this.generate();
             this.setContent(html, el);
             this.enhance();
@@ -1145,6 +1171,9 @@ namespace jsonform {
             };
             var template: string = null;
             var html = '';
+            
+            var keyOnParent = this.formElement ? this.formElement.keyOnParent : null;
+            console.log(`(FormNode) generate: keyOnParent=${keyOnParent}, required?=${this.required}`);
 
             // Complete the data context if needed
             if (this.ownerTree.formDesc.onBeforeRender) {
