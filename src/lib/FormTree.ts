@@ -45,8 +45,10 @@ namespace jsonform {
          * 2016-04-09
          * Coridyn: candidate for refactoring
          */
-        initialize(formDesc) {
-            formDesc = formDesc || {};
+        initialize(formDesc: IFormDescriptor) {
+            formDesc = formDesc || {
+                    schema: {}
+                };
 
             // Keep a pointer to the initial JSONForm
             // (note clone returns a shallow copy, only first-level is cloned)
@@ -72,11 +74,69 @@ namespace jsonform {
                     properties: this.formDesc.schema
                 };
             }
+            
+            
+            /**
+             * Rewrite V3 schema to V4
+             */
+            this._convertSchemaV3ToV4(this.formDesc.schema);
+            if (this.formDesc.schema.definitions) {
+                for (var definition in this.formDesc.schema.definitions) {
+                    this._convertSchemaV3ToV4(this.formDesc.schema.definitions[definition]);
+                }
+            }
 
-            // Schema V4 adjust, required field moved to top level of the schema
-            var processedSchemaNodes = []; // prevent inner dead loop.
-            function convertSchemaV3ToV4(schema) {
-                if (!schema){
+            this.formDesc._originalSchema = this.formDesc.schema;
+            this.formDesc.schema = JSON.parse(JSON.stringify(this.formDesc.schema));
+            
+            
+            /**
+             * Resolve inline $ref definitions, result schema not work with z-schema so
+             * it will be passed `_originalSchema`.
+             */
+            if (this.formDesc.schema.definitions) {
+                this._resolveRefs(this.formDesc.schema, this.formDesc.schema.definitions);
+            }
+            
+
+            // Ensure layout is set
+            this.formDesc.form = this.formDesc.form || this._getDefaultFormElements();
+            // Ensure `formDesc.form` is an array.
+            this.formDesc.form = [].concat(this.formDesc.form);
+
+            this.formDesc.params = this.formDesc.params || {};
+
+            // Create the root of the tree
+            this.root = new FormNode();
+            this.root.ownerTree = this;
+            this.root.view = jsonform.elementTypes['root'];
+
+            // Generate the tree from the form description
+            this.buildTree();
+
+            // Compute the values associated with each node
+            // (for arrays, the computation actually creates the form nodes)
+            this.computeInitialValues();
+        }
+    
+    
+        /**
+         * Recurse through the schema structure and convert
+         * jsonschemaV3 to jsonschemav4 structure.
+         * 
+         * Generally this involves:
+         *  - shift `required: true` properties up to the parent's
+         *    `required: string[]` list.
+         *    
+         *  - Make sure `array.items` is explicitly an object and not an array/tuple
+         *    (i.e. enforce jsonform array schema limitation - all arrays must contain the same type)
+         * 
+         * @param schema
+         * @param processedSchemaNodes List of visited nodes - to avoid circular references.
+         * @private
+         */
+        _convertSchemaV3ToV4(schema: any, processedSchemaNodes: any[] = []){
+            if (!schema){
                     // return schema;
                     return;
                 }
@@ -105,7 +165,7 @@ namespace jsonform {
                         if (fieldSchema.type === 'object') {
                             if (processedSchemaNodes.indexOf(fieldSchema) < 0) {
                                 processedSchemaNodes.push(fieldSchema);
-                                convertSchemaV3ToV4(fieldSchema);
+                                this._convertSchemaV3ToV4(fieldSchema, processedSchemaNodes);
                             }
                         }
                         else {
@@ -119,7 +179,7 @@ namespace jsonform {
                             if (fieldSchema.items.type === 'object') {
                                 if (processedSchemaNodes.indexOf(fieldSchema.items) < 0) {
                                     processedSchemaNodes.push(fieldSchema.items);
-                                    convertSchemaV3ToV4(fieldSchema.items);
+                                    this._convertSchemaV3ToV4(fieldSchema.items, processedSchemaNodes);
                                 }
                             }
                         }
@@ -142,62 +202,38 @@ namespace jsonform {
                  */
                 // schema = _.omit(schema, omitList);
                 // return schema;
-            }
-            convertSchemaV3ToV4(this.formDesc.schema);
-            if (this.formDesc.schema.definitions) {
-                for (var definition in this.formDesc.schema.definitions) {
-                    convertSchemaV3ToV4(this.formDesc.schema.definitions[definition]);
-                }
-            }
-
-            this.formDesc._originalSchema = this.formDesc.schema;
-            this.formDesc.schema = JSON.parse(JSON.stringify(this.formDesc.schema));
-
-            // Resolve inline $ref definitions, result schema not work with z-schema at least
-            var resolvedSchemaRefNodes = [];
-            function resolveRefs(obj, defs) {
-                Object.keys(obj).forEach(function(prop, index, array) {
-                    var def = obj[prop];
-                    if (def !== null && typeof def === 'object') {
-                        if (def.$ref) {
-                            if (def.$ref.slice(0, 14) === '#/definitions/') {
-                                var ref = def.$ref.replace(/^#\/definitions\//, '');
-                                obj[prop] = defs[ref];
-                            }
-                            else {
-                                console.log('Unresolved $ref: ' + def.$ref);
-                            }
+        }
+    
+    
+        /**
+         * Preprocess $ref properties.
+         * 
+         * Resolve them and replace {$ref: string} with the actual
+         * schema representation.
+         * 
+         * @param obj
+         * @param defs
+         * @private
+         */
+        _resolveRefs(obj: any, defs: any, resolvedSchemaRefNodes: any[] = []){
+            // Object.keys(obj).forEach(function(prop, index, array) {
+            _.forEach(obj, (def, prop) => {
+                if (def !== null && typeof def === 'object') {
+                    if (def.$ref) {
+                        if (def.$ref.slice(0, 14) === '#/definitions/') {
+                            var ref = def.$ref.replace(/^#\/definitions\//, '');
+                            obj[prop] = defs[ref];
                         }
-                        else if (resolvedSchemaRefNodes.indexOf(def) < 0) {
-                            resolveRefs(def, defs);
-                            resolvedSchemaRefNodes.push(def);
+                        else {
+                            console.log('Unresolved $ref: ' + def.$ref);
                         }
                     }
-                })
-            }
-
-            if (this.formDesc.schema.definitions) {
-                resolveRefs(this.formDesc.schema, this.formDesc.schema.definitions);
-            }
-
-            // Ensure layout is set
-            this.formDesc.form = this.formDesc.form || this._getDefaultFormElements();
-            // Ensure `formDesc.form` is an array.
-            this.formDesc.form = [].concat(this.formDesc.form);
-
-            this.formDesc.params = this.formDesc.params || {};
-
-            // Create the root of the tree
-            this.root = new FormNode();
-            this.root.ownerTree = this;
-            this.root.view = jsonform.elementTypes['root'];
-
-            // Generate the tree from the form description
-            this.buildTree();
-
-            // Compute the values associated with each node
-            // (for arrays, the computation actually creates the form nodes)
-            this.computeInitialValues();
+                    else if (resolvedSchemaRefNodes.indexOf(def) < 0) {
+                        resolvedSchemaRefNodes.push(def);
+                        this._resolveRefs(def, defs, resolvedSchemaRefNodes);
+                    }
+                }
+            });
         }
     
     

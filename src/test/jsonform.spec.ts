@@ -58,7 +58,7 @@ describe('jsonform', function(){
     });
     
     
-    it('renders form from schema', function(){
+    xit('renders form from schema', function(){
         var options = {
             schema: schema
         };

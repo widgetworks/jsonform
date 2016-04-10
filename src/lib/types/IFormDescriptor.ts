@@ -15,13 +15,13 @@ namespace jsonform {
          * Currently only supports the short-hand schema (despite what
          * the documentation says).
          */
-        schema;     // The JSON schema object.
+        schema: any;     // The JSON schema object.
         
         /**
          * JsonForm metadata used control which controls are shown and 
          * how they are presented.
          */
-        form: IFormElementOrString[];
+        form?: IFormElementOrString[];
     
         /**
          * Optional - additional map of IFormElement instances
@@ -113,7 +113,7 @@ namespace jsonform {
         defaultClasses?: {[classId: string]: string};
         
         
-        validate: ValidateForm;
+        validate?: ValidateForm;
         displayErrors?: (errors: any[], domRoot) => void;
         
         
