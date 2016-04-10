@@ -141,12 +141,8 @@ namespace jsonform {
                 return;
             }
             
-            var omitList: string[] = [];
-            
             if (_.has(schema, 'readonly')){
-                omitList.push('readonly');
                 schema.readOnly = schema['readonly'];
-                
                 delete schema.readonly;
             }
             
@@ -202,8 +198,6 @@ namespace jsonform {
                 if (required.length > 0){
                     schema.required = required;
                 } else {
-                    omitList.push('required');
-                    
                     delete schema.required;
                 }
             }
@@ -231,7 +225,7 @@ namespace jsonform {
          */
         _resolveRefs(obj: any, defs: any, resolvedSchemaRefNodes: any[] = []){
             // Object.keys(obj).forEach(function(prop, index, array) {
-            _.forEach(obj, (def, prop) => {
+            _.forEach(obj, (def: any, prop: string) => {
                 if (def !== null && typeof def === 'object') {
                     if (def.$ref) {
                         if (def.$ref.slice(0, 14) === '#/definitions/') {

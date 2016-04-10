@@ -452,7 +452,9 @@ describe('FormTree', function(){
                 "description": "json-schema v4 style 'required'",
                 "type": "object",
                 "required": [
-                    "name"
+                    "name",
+                    "address",
+                    "phoneNumber"
                 ],
                 "properties": {
                     "name": {
@@ -480,6 +482,21 @@ describe('FormTree', function(){
                                 "type": "string"
                             }
                         }
+                    },
+                    "phoneNumber": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["location", "code"],
+                            "properties": {
+                                "location": {
+                                    "type": "string"
+                                },
+                                "code": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
                     }
                 }
             };
@@ -498,9 +515,135 @@ describe('FormTree', function(){
      */
     describe('#_resolveRefs()', function(){
         
-        var _schema: jsonform.IFormDescriptor;
+        var schema: jsonform.IJsonSchemaAny;
+        
+        beforeEach(function(){
+        	schema = {
+                "properties": {
+                    "type": "object",
+                    "required": [
+                        "name"
+                    ],
+                    "properties": {
+                        "name": {
+                            "title": "Name",
+                            "type": "string"
+                        },
+                        "homeAddress": {
+                            "$ref": "#/definitions/address"
+                        }
+                    }
+                },
+                "definitions": {
+                    // "contactDetails": {
+                    //     "type": "object",
+                    //     "properties": {
+                    //         "address": {
+                    //             "$ref": "#/definitions/address"
+                    //         },
+                    //         "phoneNumber": {
+                    //             "$ref": "#/definitions/phoneNumber"
+                    //         }
+                    //     }
+                    // },
+                    "address": {
+                        "title": "Address",
+                        "type": "object",
+                        "required": [
+                            "steet",
+                            "city"
+                        ],
+                        "properties": {
+                            "city": {
+                                "title": "City",
+                                "type": "string"
+                            },
+                            "street": {
+                                "title": "Street",
+                                "type": "string"
+                            },
+                            "zip": {
+                                "title": "Zip",
+                                "type": "string"
+                            }
+                        }
+                    },
+                    
+                    "phoneNumber": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["location", "code"],
+                            "properties": {
+                                "location": {
+                                    "type": "string"
+                                },
+                                "code": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        });
         
         
+        it('resolves $ref values to `definitions` lookup', function(){
+            var v4Result = {
+                "properties": {
+                    "type": "object",
+                    "required": [
+                        "name"
+                    ],
+                    "properties": {
+                        "name": {
+                            "title": "Name",
+                            "type": "string"
+                        },
+                        "homeAddress": {
+                            "title": "Address",
+                            "type": "object",
+                            "required": [
+                                "steet",
+                                "city"
+                            ],
+                            "properties": {
+                                "city": {
+                                    "title": "City",
+                                    "type": "string"
+                                },
+                                "street": {
+                                    "title": "Street",
+                                    "type": "string"
+                                },
+                                "zip": {
+                                    "title": "Zip",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            formTree._resolveRefs(schema, schema.definitions);
+            
+            var result = {
+                properties: schema.properties
+            };
+            expect(result).toEqual(v4Result);
+        });
+        
+        
+        xit('resolves nested references', function(){
+        	// To be completed later
+        });
+        
+        
+        xit('allows forward-referencing definitions', function(){
+        	// To be completed later
+        });
         
     });
     // End of '#_resolveRefs()'.
