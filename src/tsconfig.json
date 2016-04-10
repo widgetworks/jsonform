@@ -5,8 +5,10 @@
         "outDir": "../build"
 	},
 	"compilerOptions": {
-		"sourceMap": true,
+//		"sourceMap": true,
+		"inlineSourceMap": true,
 	    "inlineSources": true,
+        
 		"declaration": true,
         "outFile": "../build/jsonform.js",
 		"rootDir": ".",

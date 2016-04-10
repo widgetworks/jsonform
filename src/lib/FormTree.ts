@@ -146,6 +146,8 @@ namespace jsonform {
             if (_.has(schema, 'readonly')){
                 omitList.push('readonly');
                 schema.readOnly = schema['readonly'];
+                
+                delete schema.readonly;
             }
             
             if (schema.properties) {
@@ -201,7 +203,7 @@ namespace jsonform {
              * Maybe just do a deep clone right at the end?
              */
             // schema = _.omit(schema, omitList);
-            // return schema;
+            return schema;
         }
     
     
@@ -547,14 +549,14 @@ namespace jsonform {
                 // we need to recurse through the list of children to create an
                 // input field per child property of the object in the JSON schema
                 if (schemaElement.type === 'object') {
-                    _.each(schemaElement.properties, function(prop, propName) {
+                    _.each(schemaElement.properties, (prop, propName) => {
                         var key = formElement.key + '.' + propName;
                         if (this.formDesc.nonDefaultFormItems && this.formDesc.nonDefaultFormItems.indexOf(key) >= 0)
                             return;
                         node.appendChild(this.buildFromLayout({
                             key: key
                         }));
-                    }, this);
+                    });
                 }
             }
 
@@ -612,12 +614,12 @@ namespace jsonform {
             }
             else if (formElement.items) {
                 // The form element defines children elements
-                _.each(formElement.items, function(item) {
+                _.each(formElement.items, (item) => {
                     if (_.isString(item)) {
                         item = { key: item };
                     }
                     node.appendChild(this.buildFromLayout(item));
-                }, this);
+                });
             }
             else if (formElement.otherField) {
                 var item: /*IOtherField*/ any = formElement.otherField;

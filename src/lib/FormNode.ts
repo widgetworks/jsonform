@@ -637,7 +637,7 @@ namespace jsonform {
                     'required',
                     'placeholder',
                     'readOnly'
-                ], function(prop) {
+                ], (prop) => {
                     if (_.isString(this.formElement[prop])) {
                         if (this.formElement[prop].indexOf('{{values.') !== -1) {
                             // This label wants to use the value of another input field.
@@ -662,7 +662,7 @@ namespace jsonform {
                     else {
                         this[prop] = this.formElement[prop];
                     }
-                }, this);
+                });
 
                 // Apply templating to options created with "titleMap" as well
                 if (this.formElement.options) {
