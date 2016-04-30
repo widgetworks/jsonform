@@ -177,6 +177,7 @@ $('document').ready(function () {
       var stack = '';
       if (e.stack){
         stack = e.stack;
+        console.error(e);
       }
       
       $('#result').html(
