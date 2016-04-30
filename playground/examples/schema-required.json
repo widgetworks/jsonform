@@ -60,7 +60,7 @@
             }
           },
           "required": [
-            "steet",
+            "street",
             "city"
           ]
         }
