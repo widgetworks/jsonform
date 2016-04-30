@@ -6,7 +6,7 @@ module.exports = function (config) {
 		files: [
             // Dependencies
             "deps/jquery.min.js"
-            ,"bower_components/lodash/dist/lodash.js"
+            ,"bower_components/lodash/lodash.js"
             ,"deps/opt/ZSchema-browser-min.js"
             
             // Library under test

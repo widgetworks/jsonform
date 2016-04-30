@@ -6,6 +6,6 @@
     "bootstrap": "~3.3.0"
   },
   "devDependencies": {
-    "lodash": "^4.9.0"
+    "lodash": "^3.10.1"
   }
 }
