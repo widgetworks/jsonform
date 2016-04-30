@@ -33,6 +33,11 @@ module.exports = function (config) {
 				pattern: 'build/test/**/*.spec.js',
 				nocache: true
 			}
+			,{
+				pattern: 'src/test/fixtures/**/*.*',
+				included: false,
+				nocache: true
+			}
 		]
 	});
 };

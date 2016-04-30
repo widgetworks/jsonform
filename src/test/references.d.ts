@@ -4,3 +4,5 @@
 interface JQuery {
     jsonForm: (options, param1?) => any;
 }
+
+declare function fetch(input, options?);

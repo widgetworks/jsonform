@@ -329,19 +329,7 @@ namespace jsonform {
             node.childPos = this.children.length;
             this.children.push(node);
     
-            /**
-             * 2016-04-10
-             * TODO: Update the `required` property of the new child node.
-             * JsonSchemaV4 moves the definition of required properties up
-             * to the parent object - `required` has become a list of children 
-             * which are required.
-             * 
-             * TODO: Need to check how jsonform handles array elements and their children
-             * and if we have access to the parent schemaElement.
-             * Or does it clone the schemaElement and give an instance to each child element???
-             */
-            node.required = this._isChildRequired(node);
-            console.log(`(FormNode) appendChild: keyOnParent="${node.formElement.keyOnParent}", required?=${node.required}`);
+            this._updateChildOnAppend(node);
     
             return node;
         }
@@ -361,6 +349,30 @@ namespace jsonform {
 
             // Remove the child from the array
             return this.children.pop();
+        }
+    
+    
+        /**
+         * Update any parent-dependant properties on this child node.
+         * 
+         * e.g. in V4 schema the state of the  `required` property is determined by the parent node.
+         * 
+         * @param node
+         * @private
+         */
+        _updateChildOnAppend(node: FormNode){
+            /**
+             * 2016-04-10
+             * TODO: Update the `required` property of the new child node.
+             * JsonSchemaV4 moves the definition of required properties up
+             * to the parent object - `required` has become a list of children 
+             * which are required.
+             * 
+             * TODO: Need to check how jsonform handles array elements and their children
+             * and if we have access to the parent schemaElement.
+             * Or does it clone the schemaElement and give an instance to each child element???
+             */
+            node.required = this._isChildRequired(node);
         }
         
         

@@ -279,112 +279,16 @@ describe('FormTree', function(){
          */
         describe('convert `required`', function(){
             
-            it('convert boolean required to parent string list', function(){
-                
-            	// V3 schema
-                schema = {
-                    "title": "Customer",
-                    "description": "json-schema v3 style 'required'",
-                    "type": "object",
-                    "required": true,
-                    "properties": {
-                        "name": {
-                            "required": true,
-                            "title": "Name",
-                            "type": "string"
-                        },
-                        "address": {
-                            "title": "Address",
-                            "type": "object",
-                            "properties": {
-                                "city": {
-                                    "required": true,
-                                    "title": "City",
-                                    "type": "string"
-                                },
-                                "street": {
-                                    "required": true,
-                                    "title": "Street",
-                                    "type": "string"
-                                },
-                                "zip": {
-                                    "title": "Zip",
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "phoneNumber": {
-                            "type": "array",
-                            "required": true,
-                            "items": {
-                                "type": "object",
-                                "required": true,
-                                "properties": {
-                                    "location": {
-                                        "required": true,
-                                        "type": "string"
-                                    },
-                                    "code": {
-                                        "required": true,
-                                        "type": "integer"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-                
-                var v4Result = {
-                    "title": "Customer",
-                    "description": "json-schema v3 style 'required'",
-                    "type": "object",
-                    "required": ["name", "phoneNumber"],
-                    "properties": {
-                        "name": {
-                            "title": "Name",
-                            "type": "string"
-                        },
-                        "address": {
-                            "title": "Address",
-                            "type": "object",
-                            "required": ["city", "street"],
-                            "properties": {
-                                "city": {
-                                    "title": "City",
-                                    "type": "string"
-                                },
-                                "street": {
-                                    "title": "Street",
-                                    "type": "string"
-                                },
-                                "zip": {
-                                    "title": "Zip",
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "phoneNumber": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "required": ["location", "code"],
-                                "properties": {
-                                    "location": {
-                                        "type": "string"
-                                    },
-                                    "code": {
-                                        "type": "integer"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-                
-                
-                var result = formTree._convertSchemaV3ToV4(schema);
-                expect(result).toEqual(v4Result);
-            	
+            it('convert boolean required to parent string list', function(done){
+                loadFixture('lib/convert-schema/01-boolean-required-to-string-list.json').then(function(fixture){
+            	    // V3 schema
+                    var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                    
+                    // V4 schema result
+                    expect(result).toEqual(fixture.$expected);
+                    
+                    done();
+                }, done);
             });
             
             
@@ -446,64 +350,15 @@ describe('FormTree', function(){
         // End of 'convert `required`'.
         
         
-        it('does not alter exiting V4 objects', function(){
-        	schema = {
-                "title": "CustomerV4",
-                "description": "json-schema v4 style 'required'",
-                "type": "object",
-                "required": [
-                    "name",
-                    "address",
-                    "phoneNumber"
-                ],
-                "properties": {
-                    "name": {
-                        "title": "Name",
-                        "type": "string"
-                    },
-                    "address": {
-                        "title": "Address",
-                        "type": "object",
-                        "required": [
-                            "steet",
-                            "city"
-                        ],
-                        "properties": {
-                            "city": {
-                                "title": "City",
-                                "type": "string"
-                            },
-                            "street": {
-                                "title": "Street",
-                                "type": "string"
-                            },
-                            "zip": {
-                                "title": "Zip",
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "phoneNumber": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "required": ["location", "code"],
-                            "properties": {
-                                "location": {
-                                    "type": "string"
-                                },
-                                "code": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            var v4Result = _.cloneDeep(schema);
-            
-            var result = formTree._convertSchemaV3ToV4(schema);
-            expect(result).toEqual(v4Result);
+        it('does not alter exiting V4 objects', function(done){
+            loadFixture('lib/convert-schema/02-skips-v4-schema.json').then(function(fixture){
+                var sourceClone = _.cloneDeep(fixture.$source);
+                
+                var result = formTree._convertSchemaV3ToV4(sourceClone);
+                expect(result).toEqual(fixture.$source);
+                
+                done();
+            }, done);
         });
         
     });
@@ -515,134 +370,48 @@ describe('FormTree', function(){
      */
     describe('#_resolveRefs()', function(){
         
-        var schema: jsonform.IJsonSchemaAny;
-        
-        beforeEach(function(){
-        	schema = {
-                "properties": {
-                    "type": "object",
-                    "required": [
-                        "name"
-                    ],
-                    "properties": {
-                        "name": {
-                            "title": "Name",
-                            "type": "string"
-                        },
-                        "homeAddress": {
-                            "$ref": "#/definitions/address"
-                        }
-                    }
-                },
-                "definitions": {
-                    // "contactDetails": {
-                    //     "type": "object",
-                    //     "properties": {
-                    //         "address": {
-                    //             "$ref": "#/definitions/address"
-                    //         },
-                    //         "phoneNumber": {
-                    //             "$ref": "#/definitions/phoneNumber"
-                    //         }
-                    //     }
-                    // },
-                    "address": {
-                        "title": "Address",
-                        "type": "object",
-                        "required": [
-                            "steet",
-                            "city"
-                        ],
-                        "properties": {
-                            "city": {
-                                "title": "City",
-                                "type": "string"
-                            },
-                            "street": {
-                                "title": "Street",
-                                "type": "string"
-                            },
-                            "zip": {
-                                "title": "Zip",
-                                "type": "string"
-                            }
-                        }
-                    },
+        it('resolves $ref value with `definitions` lookup', function(done){
+        	loadFixture('lib/$ref/simple-ref.json')
+                .then(function(fixture){
+                    var result = formTree._resolveRefs(
+                        fixture.$source.properties,
+                        fixture.$source.definitions
+                    );
                     
-                    "phoneNumber": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "required": ["location", "code"],
-                            "properties": {
-                                "location": {
-                                    "type": "string"
-                                },
-                                "code": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
-                    }
-                }
-            };
+                    expect(result).toEqual(fixture.$expected);
+                    
+                    done();
+                }, done);
         });
         
         
-        it('resolves $ref values to `definitions` lookup', function(){
-            var v4Result = {
-                "properties": {
-                    "type": "object",
-                    "required": [
-                        "name"
-                    ],
-                    "properties": {
-                        "name": {
-                            "title": "Name",
-                            "type": "string"
-                        },
-                        "homeAddress": {
-                            "title": "Address",
-                            "type": "object",
-                            "required": [
-                                "steet",
-                                "city"
-                            ],
-                            "properties": {
-                                "city": {
-                                    "title": "City",
-                                    "type": "string"
-                                },
-                                "street": {
-                                    "title": "Street",
-                                    "type": "string"
-                                },
-                                "zip": {
-                                    "title": "Zip",
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            
-            formTree._resolveRefs(schema, schema.definitions);
-            
-            var result = {
-                properties: schema.properties
-            };
-            expect(result).toEqual(v4Result);
+        xit('throws error if $ref cannot be found in `definitions`', function(){
+        	fail('not implemented');
+        });
+        
+        
+        xit('resolves nested $refs', function(){
+        	fail('not implemented');
+        });
+        
+        
+        xit('resolves recursive $refs', function(){
+        	fail('not implemented');
+        });
+        
+        
+        xit('handles circular object references', function(){
+        	fail('not implemented');
         });
         
         
         xit('resolves nested references', function(){
-        	// To be completed later
+        	fail('not implemented');
         });
         
         
         xit('allows forward-referencing definitions', function(){
-        	// To be completed later
+        	fail('not implemented');
         });
         
     });

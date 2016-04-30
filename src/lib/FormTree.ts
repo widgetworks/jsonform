@@ -214,16 +214,26 @@ namespace jsonform {
     
     
         /**
-         * Preprocess $ref properties.
+         * Process $ref properties.
          * 
-         * Resolve them and replace {$ref: string} with the actual
+         * Resolve them by replacing {$ref: string} with the actual
          * schema representation.
          * 
          * @param obj
          * @param defs
          * @private
          */
-        _resolveRefs(obj: any, defs: any, resolvedSchemaRefNodes: any[] = []){
+        _resolveRefs(obj: any, defs: any, resolvedSchemaRefNodes?: any[]){
+            
+            // TODO: Resolve nested $ref in `defs` first, then check `obj`.
+            if (!resolvedSchemaRefNodes){
+                resolvedSchemaRefNodes = [];
+                
+                // this._resolveRefs(defs, defs, resolvedSchemaRefNodes);
+            }
+            
+            
+            
             // Object.keys(obj).forEach(function(prop, index, array) {
             _.forEach(obj, (def: any, prop: string) => {
                 if (def !== null && typeof def === 'object') {
@@ -231,17 +241,20 @@ namespace jsonform {
                         if (def.$ref.slice(0, 14) === '#/definitions/') {
                             var ref = def.$ref.replace(/^#\/definitions\//, '');
                             obj[prop] = defs[ref];
-                        }
-                        else {
+                            
+                            // TODO: Check for non-existent references - keep track of it for error reporting.
+                            
+                        } else {
                             console.log('Unresolved $ref: ' + def.$ref);
                         }
-                    }
-                    else if (resolvedSchemaRefNodes.indexOf(def) < 0) {
+                    } else if (resolvedSchemaRefNodes.indexOf(def) < 0) {
                         resolvedSchemaRefNodes.push(def);
                         this._resolveRefs(def, defs, resolvedSchemaRefNodes);
                     }
                 }
             });
+            
+            return obj;
         }
     
     

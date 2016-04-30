@@ -1,0 +1,55 @@
+{
+    "$source": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "type": "object",
+        "properties": {
+            "string": {
+                "$ref": "#/definitions/stringRef"
+            },
+            "integer": {
+                "$ref": "#/definitions/integerRef"
+            },
+            "object": {
+                "$ref": "#/definitions/objectRef"
+            }
+        },
+        "definitions": {
+            "stringRef": {
+                "title": "String type",
+                "type": "string"
+            },
+            "integerRef": {
+                "title": "Integer type",
+                "type": "integer"
+            },
+            "objectRef": {
+                "title": "Object type",
+                "type": "object",
+                "properties": {
+                    "stringValue": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "$expected": {
+        "string": {
+            "title": "String type",
+            "type": "string"
+        },
+        "integer": {
+            "title": "Integer type",
+            "type": "integer"
+        },
+        "object": {
+            "title": "Object type",
+            "type": "object",
+            "properties": {
+                "stringValue": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

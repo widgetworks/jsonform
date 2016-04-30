@@ -1,0 +1,105 @@
+{
+    "$sourceDescription": [
+        "Convert v3 schema `{required: boolean}` into {required: ['requiredChild'], properties: {requiredChild: {...}}}"
+    ],
+    "$source": {
+        "title": "Customer",
+        "description": "json-schema v3 style 'required'",
+        "type": "object",
+        "required": true,
+        "properties": {
+            "name": {
+                "required": true,
+                "title": "Name",
+                "type": "string"
+            },
+            "address": {
+                "title": "Address",
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "required": true,
+                        "title": "City",
+                        "type": "string"
+                    },
+                    "street": {
+                        "required": true,
+                        "title": "Street",
+                        "type": "string"
+                    },
+                    "zip": {
+                        "title": "Zip",
+                        "type": "string"
+                    }
+                }
+            },
+            "phoneNumber": {
+                "type": "array",
+                "required": true,
+                "items": {
+                    "type": "object",
+                    "required": true,
+                    "properties": {
+                        "location": {
+                            "required": true,
+                            "type": "string"
+                        },
+                        "code": {
+                            "required": true,
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "$expectedDescription": [
+        "V4 schema result:"
+    ],
+    "$expected": {
+        "title": "Customer",
+        "description": "json-schema v3 style 'required'",
+        "type": "object",
+        "required": ["name", "phoneNumber"],
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string"
+            },
+            "address": {
+                "title": "Address",
+                "type": "object",
+                "required": ["city", "street"],
+                "properties": {
+                    "city": {
+                        "title": "City",
+                        "type": "string"
+                    },
+                    "street": {
+                        "title": "Street",
+                        "type": "string"
+                    },
+                    "zip": {
+                        "title": "Zip",
+                        "type": "string"
+                    }
+                }
+            },
+            "phoneNumber": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["location", "code"],
+                    "properties": {
+                        "location": {
+                            "type": "string"
+                        },
+                        "code": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

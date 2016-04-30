@@ -28,7 +28,7 @@ namespace jsonform {
     
     
     export type ISchemaElementAny = ISchemaElement & ISchemaElementV3;
-    export type ISchemaElement = ISchemaElementBase & ISchemaObjectV4;
+    export type ISchemaElement = ISchemaElementBase & ISchemaObject;
     export type ISchemaElementV3 = ISchemaElementBase & ISchemaObjectV3;
     // export interface ISchemaElement extends ISchemaElementBase, ISchemaObjectV4 {}
     // export interface ISchemaElementV3 extends ISchemaElementBase, ISchemaObjectV3 {}
@@ -49,10 +49,10 @@ namespace jsonform {
     }
     
     
-    export interface IJsonSchemaRoot extends IJsonSchemaAny, ISchemaObjectV4 {
+    export interface IJsonSchemaRoot extends IJsonSchemaAny, ISchemaObject {
         $schema: string;
     }
-    export interface IJsonSchemaRootV3 extends IJsonSchemaAny, ISchemaObjectV3 {
+    export interface IJsonSchemaRootV3 extends IJsonSchemaAnyBase, ISchemaObjectV3 {
         $schema: string;
     }
     
@@ -60,13 +60,37 @@ namespace jsonform {
     /**
      * JsonSchema element definition
      */
-    export interface IJsonSchemaAny extends ISchemaNumber, ISchemaInteger, ISchemaString, ISchemaArray, ISchemaObject{}
+    export type JsonItemOrRef = IJsonSchemaAny | IJsonSchemaRef;
+    
+    
+    export interface IJsonSchemaAny extends 
+        ISchemaNumber, 
+        ISchemaInteger, 
+        ISchemaString, 
+        ISchemaArray, 
+        ISchemaObject
+    {}
+    
+    
+    export interface IJsonSchemaAnyBase extends 
+        ISchemaNumber, 
+        ISchemaInteger, 
+        ISchemaString, 
+        ISchemaArray, 
+        ISchemaObjectBase
+    {}
     
     
     /**
      * Common schema elements.
      */
+    export interface IJsonSchemaRef {
+        $ref: string;
+    }
+    
+    
     export interface IJsonSchemaItem {
+        $schema?: string;
         id?:string;
         
         type: string;
@@ -81,7 +105,6 @@ namespace jsonform {
         description?: string;
         default?: any;
         
-        $ref?: string;
         definitions?: {[id: string]: IJsonSchemaAny};
     }
     
@@ -101,33 +124,33 @@ namespace jsonform {
     }
     
     export interface ISchemaArray extends IJsonSchemaItem {
-        additionalItems?: boolean | IJsonSchemaAny;
-        items?: IJsonSchemaAny | IJsonSchemaAny[];
+        additionalItems?: boolean | JsonItemOrRef;
+        items?: JsonItemOrRef | JsonItemOrRef[];
         maxItems?: number;
         minItems?: number;
         uniqueItems?: boolean;
     }
     
-    export interface ISchemaObject extends IJsonSchemaItem {
+    export interface ISchemaObjectBase extends IJsonSchemaItem {
         maxProperties?: number;
         minProperties?: number;
         
-        additionalProperties?: boolean | IJsonSchemaAny;
-        properties?: {[property: string]: IJsonSchemaAny};
-        patternProperties?: {[propertyRegExp: string]: IJsonSchemaAny};
+        additionalProperties?: boolean | JsonItemOrRef;
+        properties?: {[property: string]: JsonItemOrRef};
+        patternProperties?: {[propertyRegExp: string]: JsonItemOrRef};
         
         dependencies?: {[withProperty: string]: IJsonSchemaAny | string[]};
     }
     
     // jsonschema v4 specification
-    export interface ISchemaObjectV4 extends ISchemaObject {
+    export interface ISchemaObject extends ISchemaObjectBase {
         // List of child properties that are required.
         required?: string[];
         readOnly?: boolean;
     }
     
     // jsonschema v3 specification
-    export interface ISchemaObjectV3 extends ISchemaObject {
+    export interface ISchemaObjectV3 extends ISchemaObjectBase {
         // Indicates if this item is required
         required?: boolean;
         'readonly'?: boolean;
