@@ -23,6 +23,20 @@ namespace jsonform {
         // Used by class
         domRoot: /* jQuery-wrapped element */ any = null;
         defaultClasses: IFormClasses = null;
+    
+    
+        /**
+         * This placeholder schemaElement will be given to all
+         * FormNodes that don't otherwise have a schemaElement 
+         * associated with them.
+         * 
+         * This should avoid a lot of null-pointer checks/exceptions.
+         * 
+         * @private
+         */
+        _dummySchemaElement: ISchemaElement = {
+            type: 'DUMMY_SCHEMA_ELEMENT'
+        };
         
         
         /**
@@ -135,72 +149,105 @@ namespace jsonform {
          * @param processedSchemaNodes List of visited nodes - to avoid circular references.
          * @private
          */
-        _convertSchemaV3ToV4(schema: any, processedSchemaNodes: any[] = []){
-            if (!schema){
+        _convertSchemaV3ToV4(_schema: any, processedSchemaNodes: any[] = [], parentSchemaProxy: any = null, keys: string[] = []){
+            if (!_schema){
                 // return schema;
                 return;
             }
+            
+            var schema = _schema;
+            if (_schema.schema){
+                // Unwrap incorrectly wrapped objects.
+                schema = _schema.schema;
+            }
+            
             
             if (_.has(schema, 'readonly')){
                 schema.readOnly = schema['readonly'];
                 delete schema.readonly;
             }
             
-            if (schema.properties) {
-                var required = [];
-                if (_.isArray(schema.required)){
-                    required = schema.required;
+            
+            /**
+             * Check `required` property of this schema element.
+             */
+            if (schema.required === true){
+                var field = keys[keys.length - 1];
+                
+                // Check that `parentSchema` exists and has a list of required properties.
+                if (parentSchemaProxy && parentSchemaProxy.required && parentSchemaProxy.required.indexOf(field) < 0){
+                    // Append to parent object's required list.
+                    parentSchemaProxy.required.push(field);
+                } else if (schema.type == 'string'){
+                    // Special handling for different types and at different levels.
+                    
+                    // We set a minimum string length as a proxy for `required`.
+                    schema.minLength = schema.minLength || 1;
                 }
+                // TODO: Handle number (and other) types.
+                
+                // Remove `required` property from this child.
+                delete schema.required;
+                
+            } else if (schema.required !== undefined && schema.required !== false && !Array.isArray(schema.required)){
+                throw new Error(`field "${keys.join('.')}"\'s required property should be either boolean or array of strings`);
+            }
     
+    
+            /**
+             * Object and array handling.
+             * 
+             * Choose which object to recurse into: `schema.properties` or `schema.items`
+             */
+            if (schema.properties) {
+                // 'object' type.
+                var required = _.isArray(schema.required) ? schema.required.concat() : [];
+                var schemaProxy = {
+                    required: required
+                };
+                
+                
                 /**
                  * Add each required child element to our `required` list.
                  */
                 for (var field in schema.properties) {
                     var childSchema/*: ISchemaElement*/ = schema.properties[field];
-                    if (childSchema.required === true) {
-                        if (required.indexOf(field) < 0){
-                            required.push(field);
-                        }
+                    if (childSchema && processedSchemaNodes.indexOf(childSchema) < 0) {
+                        processedSchemaNodes.push(childSchema);
                         
-                        // Remove `required` property from this child.
-                        delete childSchema.required;
-                    }
-                    else if (childSchema.required !== undefined && childSchema.required !== false && !Array.isArray(childSchema.required)){
-                        throw new Error('field "' + field + '"\'s required property should be either boolean or array of strings');
-                    }
-                        
-                    if (childSchema.type === 'object') {
-                        // Recurse into child objects.
-                        if (processedSchemaNodes.indexOf(childSchema) < 0) {
-                            processedSchemaNodes.push(childSchema);
-                            this._convertSchemaV3ToV4(childSchema, processedSchemaNodes);
-                        }
-                    }
-                    else {
-                        // Remove required property from non-object types.
-                        delete childSchema.required;
-                    }
-                    
-                    if (childSchema.type === 'array' && childSchema.items) {
-                        if (Array.isArray(childSchema.items)) {
-                            throw new Error('the items property of array property "' + field + '" in the schema definition must be an object');
-                        }
-                        
-                        if (childSchema.items.type === 'object') {
-                            if (processedSchemaNodes.indexOf(childSchema.items) < 0) {
-                                processedSchemaNodes.push(childSchema.items);
-                                this._convertSchemaV3ToV4(childSchema.items, processedSchemaNodes);
-                            }
-                        }
+                        keys.push(field);
+                        this._convertSchemaV3ToV4(childSchema, processedSchemaNodes, schemaProxy, keys);
+                        keys.pop();
                     }
                 }
                 
-                if (required.length > 0){
-                    schema.required = required;
-                } else {
+                /**
+                 * Schema V4 doesn't allow the `required` array to be empty if it is present :|
+                 * So we'll only add it if it's not empty and will remove it otherwise.
+                 */
+                if (schemaProxy.required.length){
+                    schema.required = schemaProxy.required;
+                } else if (schemaProxy.required.length == 0 && schema.required){
                     delete schema.required;
                 }
+                
+            } else if (schema.type == 'array'){
+                // 'array' type.
+                
+                if (schema.items) {
+                    if (Array.isArray(schema.items)) {
+                        throw new Error(`the items property of array property "${keys.join('.')}" in the schema definition must be an object`);
+                    }
+                    
+                    // Process the array items in the same way
+                    if (processedSchemaNodes.indexOf(schema.items) < 0) {
+                        processedSchemaNodes.push(schema.items);
+                        this._convertSchemaV3ToV4(schema.items, processedSchemaNodes, schema, keys);
+                    }
+                }
             }
+            
+            
 
             /**
              * TODO: Duplicate the object and omit the unnecessary properties.
@@ -209,7 +256,7 @@ namespace jsonform {
              * Maybe just do a deep clone right at the end?
              */
             // schema = _.omit(schema, omitList);
-            return schema;
+            return _schema;
         }
     
     
@@ -371,168 +418,8 @@ namespace jsonform {
             }
 
             if (formElement.key) {
-                // The form element is directly linked to an element in the JSON
-                // schema. The properties of the form element override those of the
-                // element in the JSON schema. Properties from the JSON schema complete
-                // those of the form element otherwise.
-
-                // Retrieve the element from the JSON schema
-                schemaElement = util.getSchemaKey(
-                    this.formDesc.schema.properties,
-                    formElement.key
-                );
-                if (!schemaElement) {
-                    // The JSON Form is invalid!
-                    throw new Error('The JSONForm object references the schema key "' +
-                        formElement.key + '" but that key does not exist in the JSON schema');
-                }
-
-                // Schema element has just been found, let's trigger the
-                // "onElementSchema" event
-                // (tidoust: not sure what the use case for this is, keeping the
-                // code for backward compatibility)
-                if (this.formDesc.onElementSchema) {
-                    this.formDesc.onElementSchema(formElement, schemaElement);
-                }
-
-                formElement.name =
-                    formElement.name ||
-                    formElement.key;
-                formElement.title =
-                    formElement.title ||
-                    schemaElement.title;
-                formElement.description =
-                    formElement.description ||
-                    schemaElement.description;
-                formElement.readOnly =
-                    formElement.readOnly ||
-                    schemaElement.readOnly ||
-                    formElement.readonly;
-
-                // A input field should be marked required unless formElement mark required
-                // or it's an array's item's required field
-                // or it's a required field of a required object (need verify the object parent chain's required)
-                function isRequiredField(key, schema) {
-                    var parts = key.split('.');
-                    var field = parts.pop();
-                    // whether an array element field is required?
-                    // array element has minItems and maxItems which control whether the item is required
-                    // so, for array item, we do not consider it as required
-                    // then for array itself? it maybe required or not, yes. so, what does it matter?
-                    // a required array always has value, even empty array, it still cound has value.
-                    // a non-required array, can not appear in the result json at all.
-                    // here we try to figure out whether a form input element should be mark required.
-                    // all of them are default non-required, unless:
-                    // 1. it's top level element and it's marked required
-                    // 2. it's direct child of an array item and it's marked required
-                    // 3. it's direct child of an object and both it and its parent are marked required.
-                    if (field.slice(-2) == '[]') return false;
-                    var parentKey = parts.join('.');
-                    var required = false;
-                    // we need get parent schema's required value
-                    if (!parentKey) {
-                        required = schema.required && schema.required.indexOf(field) >= 0;
-                    }
-                    else {
-                        var parentSchema = util.getSchemaKey(schema.properties, parentKey);
-                        required = parentSchema.required && parentSchema.required.indexOf(field) >= 0;
-                        if (required)
-                            required = parentKey.slice(-2) == '[]' || isRequiredField(parentKey, schema);
-                    }
-                    return required;
-                }
-                
-                // formElement.required = formElement.required === true || schemaElement.required === true || isRequiredField(formElement.key, this.formDesc.schema);
-                
-                /**
-                 * 2016-04-10 Coridyn:
-                 * I've removed the check for `schemaElement.required` because this is
-                 * now shifted up to the parent schemaElement and will be processed
-                 * when appending this `FormNode` to it's parent.
-                 */
-                // formElement.required = formElement.required === true || 
-                //     // schemaElement.required === true || 
-                //     isRequiredField(formElement.key, this.formDesc.schema);
-
-                // Compute the ID of the input field
-                if (!formElement.id) {
-                    formElement.id = util.escapeSelector(this.formDesc.prefix) +
-                        '-elt-' + formElement.key;
-                }
-
-                // Should empty strings be included in the final value?
-                // TODO: it's rather unclean to pass it through the schema.
-                if (formElement.allowEmpty) {
-                    schemaElement._jsonform_allowEmpty = true;
-                }
-
-                // If the form element does not define its type, use the type of
-                // the schema element.
-                if (!formElement.type) {
-                    if ((schemaElement.type === 'string') &&
-                        (schemaElement.format === 'color')) {
-                        formElement.type = 'color';
-                    } else if ((schemaElement.type === 'number' ||
-                        schemaElement.type === 'integer') &&
-                        !schemaElement['enum']) {
-                        formElement.type = 'number';
-                    } else if ((schemaElement.type === 'string' ||
-                        schemaElement.type === 'any') &&
-                        !schemaElement['enum']) {
-                        formElement.type = 'text';
-                    } else if (schemaElement.type === 'boolean') {
-                        formElement.type = 'checkbox';
-                    } else if (schemaElement.type === 'object') {
-                        if (schemaElement.properties) {
-                            formElement.type = 'fieldset';
-                        } else {
-                            formElement.type = 'textarea';
-                        }
-                    } else if (!_.isUndefined(schemaElement['enum'])) {
-                        formElement.type = 'select';
-                    } else {
-                        formElement.type = schemaElement.type;
-                    }
-                }
-
-                // Unless overridden in the definition of the form element (or unless
-                // there's a titleMap defined), use the enumeration list defined in
-                // the schema
-                if (formElement.options) {
-                    // FIXME: becareful certin type form element may has special format for options
-                    this._prepareOptions(formElement);
-                } else if (schemaElement['enum'] || schemaElement.type === 'boolean') {
-                    var enumValues: any[] = schemaElement['enum'];
-                    if (!enumValues) {
-                        enumValues = formElement.type === 'select' ? ['', true, false] : [true, false];
-                    }
-                    else {
-                        formElement.optionsAsEnumOrder = true;
-                    }
-                    this._prepareOptions(formElement, enumValues);
-                }
-
-                // Flag a list of checkboxes with multiple choices
-                if ((formElement.type === 'checkboxes' || formElement.type === 'checkboxbuttons') && schemaElement.items) {
-                    var theItem = Array.isArray(schemaElement.items) ? schemaElement.items[0] : schemaElement.items;
-                    if (formElement.options) {
-                        // options only but no enum mode, since no enum, we can use only the value mode
-                        this._prepareOptions(formElement);
-                        theItem._jsonform_checkboxes_as_array = 'value';
-                    }
-                    else {
-                        var enumValues: any[] = theItem['enum'];
-                        if (enumValues) {
-                            this._prepareOptions(formElement, enumValues);
-                            formElement.optionsAsEnumOrder = true;
-                            theItem._jsonform_checkboxes_as_array = formElement.type === 'checkboxes' ? true : 'value';
-                        }
-                    }
-                }
-                
-                if (formElement.getValue === 'tagsinput') {
-                    schemaElement._jsonform_get_value_by_tagsinput = 'tagsinput';
-                }
+                // Get the schemaElement and update formElement properties.
+                schemaElement = this._getSchemaElementByFormElementKey(formElement);
             } else {
                 // Debug: find out what is creating nodes without keys.
                 // Answer: Elements defined in the top-level `{ form: [] }`
@@ -541,9 +428,7 @@ namespace jsonform {
                 var a = true;
             }
 
-            if (!formElement.type) {
-                formElement.type = 'text';
-            }
+            formElement.type = formElement.type || 'text';
             view = jsonform.elementTypes[formElement.type];
             if (!view) {
                 throw new Error('The JSONForm contains an element whose type is unknown: "' +
@@ -579,10 +464,19 @@ namespace jsonform {
 
             // Initialize the form node from the form element and schema element
             node.formElement = formElement;
-            node.schemaElement = schemaElement;
             node.view = view;
             node.ownerTree = this;
     
+            /**
+             * 2016-04-30
+             * To make templating easier we will make sure there is always 
+             * a `schemaElement` object available.
+             * 
+             * If a schemaElement isn't associated by now then we will just
+             * assign a dummy placeholder instance.
+             */
+            node.schemaElement = schemaElement || this._dummySchemaElement;
+            
     
             /**
              * 2016-04-10
@@ -651,6 +545,183 @@ namespace jsonform {
             }
 
             return node;
+        }
+    
+    
+        /**
+         * Look up a schema element with the key given on the `formElement`.
+         * 
+         * The formElement is mutated based on properties on the schemaElement.
+         * 
+         * @private
+         */
+        _getSchemaElementByFormElementKey(formElement: IFormElement): ISchemaElement{
+            var schemaElement: ISchemaElement = null;
+            
+            // The form element is directly linked to an element in the JSON
+            // schema. The properties of the form element override those of the
+            // element in the JSON schema. Properties from the JSON schema complete
+            // those of the form element otherwise.
+
+            // Retrieve the element from the JSON schema
+            schemaElement = util.getSchemaKey(
+                this.formDesc.schema.properties,
+                formElement.key
+            );
+            if (!schemaElement) {
+                // The JSON Form is invalid!
+                throw new Error('The JSONForm object references the schema key "' +
+                    formElement.key + '" but that key does not exist in the JSON schema');
+            }
+
+            // Schema element has just been found, let's trigger the
+            // "onElementSchema" event
+            // (tidoust: not sure what the use case for this is, keeping the
+            // code for backward compatibility)
+            if (this.formDesc.onElementSchema) {
+                this.formDesc.onElementSchema(formElement, schemaElement);
+            }
+
+            formElement.name =
+                formElement.name ||
+                formElement.key;
+            formElement.title =
+                formElement.title ||
+                schemaElement.title;
+            formElement.description =
+                formElement.description ||
+                schemaElement.description;
+            formElement.readOnly =
+                formElement.readOnly ||
+                schemaElement.readOnly ||
+                formElement.readonly;
+
+            // A input field should be marked required unless formElement mark required
+            // or it's an array's item's required field
+            // or it's a required field of a required object (need verify the object parent chain's required)
+            // function isRequiredField(key, schema) {
+            //     var parts = key.split('.');
+            //     var field = parts.pop();
+            //     // whether an array element field is required?
+            //     // array element has minItems and maxItems which control whether the item is required
+            //     // so, for array item, we do not consider it as required
+            //     // then for array itself? it maybe required or not, yes. so, what does it matter?
+            //     // a required array always has value, even empty array, it still cound has value.
+            //     // a non-required array, can not appear in the result json at all.
+            //     // here we try to figure out whether a form input element should be mark required.
+            //     // all of them are default non-required, unless:
+            //     // 1. it's top level element and it's marked required
+            //     // 2. it's direct child of an array item and it's marked required
+            //     // 3. it's direct child of an object and both it and its parent are marked required.
+            //     if (field.slice(-2) == '[]') return false;
+            //     var parentKey = parts.join('.');
+            //     var required = false;
+            //     // we need get parent schema's required value
+            //     if (!parentKey) {
+            //         required = schema.required && schema.required.indexOf(field) >= 0;
+            //     }
+            //     else {
+            //         var parentSchema = util.getSchemaKey(schema.properties, parentKey);
+            //         required = parentSchema.required && parentSchema.required.indexOf(field) >= 0;
+            //         if (required)
+            //             required = parentKey.slice(-2) == '[]' || isRequiredField(parentKey, schema);
+            //     }
+            //     return required;
+            // }
+            
+            // formElement.required = formElement.required === true || schemaElement.required === true || isRequiredField(formElement.key, this.formDesc.schema);
+            
+            /**
+             * 2016-04-10 Coridyn:
+             * I've removed the check for `schemaElement.required` because this is
+             * now shifted up to the parent schemaElement and will be processed
+             * when appending this `FormNode` to it's parent.
+             */
+            // formElement.required = formElement.required === true || 
+            //     // schemaElement.required === true || 
+            //     isRequiredField(formElement.key, this.formDesc.schema);
+
+            // Compute the ID of the input field
+            if (!formElement.id) {
+                formElement.id = util.escapeSelector(this.formDesc.prefix) +
+                    '-elt-' + formElement.key;
+            }
+
+            // Should empty strings be included in the final value?
+            // TODO: it's rather unclean to pass it through the schema.
+            if (formElement.allowEmpty) {
+                schemaElement._jsonform_allowEmpty = true;
+            }
+
+            // If the form element does not define its type, use the type of
+            // the schema element.
+            if (!formElement.type) {
+                if ((schemaElement.type === 'string') &&
+                    (schemaElement.format === 'color')) {
+                    formElement.type = 'color';
+                } else if ((schemaElement.type === 'number' ||
+                    schemaElement.type === 'integer') &&
+                    !schemaElement['enum']) {
+                    formElement.type = 'number';
+                } else if ((schemaElement.type === 'string' ||
+                    schemaElement.type === 'any') &&
+                    !schemaElement['enum']) {
+                    formElement.type = 'text';
+                } else if (schemaElement.type === 'boolean') {
+                    formElement.type = 'checkbox';
+                } else if (schemaElement.type === 'object') {
+                    if (schemaElement.properties) {
+                        formElement.type = 'fieldset';
+                    } else {
+                        formElement.type = 'textarea';
+                    }
+                } else if (!_.isUndefined(schemaElement['enum'])) {
+                    formElement.type = 'select';
+                } else {
+                    formElement.type = schemaElement.type;
+                }
+            }
+
+            // Unless overridden in the definition of the form element (or unless
+            // there's a titleMap defined), use the enumeration list defined in
+            // the schema
+            if (formElement.options) {
+                // FIXME: becareful certin type form element may has special format for options
+                this._prepareOptions(formElement);
+            } else if (schemaElement['enum'] || schemaElement.type === 'boolean') {
+                var enumValues: any[] = schemaElement['enum'];
+                if (!enumValues) {
+                    enumValues = formElement.type === 'select' ? ['', true, false] : [true, false];
+                }
+                else {
+                    formElement.optionsAsEnumOrder = true;
+                }
+                this._prepareOptions(formElement, enumValues);
+            }
+
+            // Flag a list of checkboxes with multiple choices
+            if ((formElement.type === 'checkboxes' || formElement.type === 'checkboxbuttons') && schemaElement.items) {
+                var theItem = Array.isArray(schemaElement.items) ? schemaElement.items[0] : schemaElement.items;
+                if (formElement.options) {
+                    // options only but no enum mode, since no enum, we can use only the value mode
+                    this._prepareOptions(formElement);
+                    theItem._jsonform_checkboxes_as_array = 'value';
+                }
+                else {
+                    var enumValues: any[] = theItem['enum'];
+                    if (enumValues) {
+                        this._prepareOptions(formElement, enumValues);
+                        formElement.optionsAsEnumOrder = true;
+                        theItem._jsonform_checkboxes_as_array = formElement.type === 'checkboxes' ? true : 'value';
+                    }
+                }
+            }
+            
+            if (formElement.getValue === 'tagsinput') {
+                schemaElement._jsonform_get_value_by_tagsinput = 'tagsinput';
+            }
+            
+            return schemaElement;
         }
     
     

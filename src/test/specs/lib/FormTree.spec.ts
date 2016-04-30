@@ -312,7 +312,7 @@ describe('FormTree', function(){
                 
                 expect(function(){
                     formTree._convertSchemaV3ToV4(schema);
-                }).toThrowError('field "name"\'s required property should be either boolean or array of strings');
+                }).toThrowError('field "customer.name"\'s required property should be either boolean or array of strings');
             });
             
             
@@ -345,6 +345,47 @@ describe('FormTree', function(){
                     formTree._convertSchemaV3ToV4(schema);
                 }).toThrowError('the items property of array property "customer" in the schema definition must be an object');
             });
+            
+            
+            /**
+             * array types
+             */
+            describe('array types', function(){
+                
+                /**
+                 * string children
+                 */
+                describe('string children', function(){
+                    
+                    it('`required` becomes `minLength`', function(done){
+                        loadFixture('lib/convert-schema/04-convert-primitive-arrays.json').then(function(fixture){
+                            var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                            expect(result).toEqual(fixture.$expected);
+                            
+                            done();
+                        }, done);
+                    });
+                    
+                    
+                    it('doesn\'t overwrite existing `minLength`', function(done){
+                    	loadFixture('lib/convert-schema/04-convert-primitive-arrays.json').then(function(fixture){
+                            var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                            expect(result).toEqual(fixture.$expected);
+                            
+                            done();
+                        }, done);
+                    });
+                	
+                	
+                });
+                // End of 'string children'.
+                
+                
+            	
+            	
+            });
+            // End of 'array types'.
+            
             
         });
         // End of 'convert `required`'.

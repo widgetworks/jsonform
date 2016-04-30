@@ -1,0 +1,25 @@
+{
+
+    "schema": {
+        "type": "object",
+        "properties": {
+            "stringRequired": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "title": "Nickname",
+                    "required": true
+                }
+            },
+            "stringMinLength": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "title": "Nickname",
+                    "minLength": 2
+                }
+            }
+        }
+    }
+
+}

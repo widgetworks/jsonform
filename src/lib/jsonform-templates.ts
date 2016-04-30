@@ -69,7 +69,7 @@ namespace jsonform {
 			'<%= (node.disabled? " disabled" : "")%>' +
 			'<%= (node.isReadOnly() ? " readonly=\'readonly\'" : "") %>' +
 			'<%= (node.schemaElement && node.schemaElement.maxLength ? " maxlength=\'" + node.schemaElement.maxLength + "\'" : "") %>' +
-			'<%= (node.required ? " required=\'required\'" : "") %>' +
+			'<%= (node.required|| node.schemaElement.minLength ? " required=\'required\'" : "") %>' +
 			'<%= (node.placeholder? " placeholder=" + \'"\' + escape(node.placeholder) + \'"\' : "")%>' +
 			' /> <pre>required=<%= node.required %></pre> ',
 			'fieldtemplate': true,

@@ -25,6 +25,7 @@ $('document').ready(function () {
           'schema-basic': 'JSON Schema - A basic example',
           'schema-morecomplex': 'JSON Schema - Slightly more complex example',
           'schema-array': 'JSON Schema - Arrays',
+          'schema-array-primitives': 'JSON Schema - Array primitives (strings)',
           'schema-required': 'JSON Schema - Required field',
           'schema-default': 'JSON Schema - Default values',
           'schema-inline-ref': 'JSON Schema - Inline $ref to definitions',
