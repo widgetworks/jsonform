@@ -260,6 +260,16 @@ namespace jsonform {
             /*  if (this.childTemplate) {
                 node.childTemplate = this.childTemplate.clone(node);
             }*/
+            
+            /**
+             * Additional properties to copy across.
+             * 
+             * 2016-04-30
+             * TODO: Do we need to copy across the callbacks and other properties?
+             */
+            node.required = this.required;
+            
+            
             return node;
         }
 
@@ -389,9 +399,15 @@ namespace jsonform {
             
             // Only check schemaElement if the formElement doesn't already have a value.
             if (!_.isBoolean(isRequired) && this.schemaElement){
+                var requiredList = this.schemaElement.required;
+                if (this.schemaElement.type == 'array'){
+                    requiredList = (<IJsonSchemaAny>this.schemaElement.items).required;
+                }
+                requiredList = requiredList || [];
+                
                 // If we are the root element then we don't have a `schemaElement`.
                 var childKey = childNode.formElement.keyOnParent;
-                isRequired = this.schemaElement.required.indexOf(childKey) >= 0;
+                isRequired = requiredList.indexOf(childKey) >= 0;
             }
             
             return isRequired;
@@ -1111,7 +1127,7 @@ namespace jsonform {
                  * 
                  * NOTE: The id in the `if` statement should NOT be escaped.
                  */
-                if (this.el == null || this.el.attr('id') != this.id) {
+                if (this.el == null || $(this.el).attr('id') != this.id) {
                     this.el = $('#' + util.escapeSelector(this.id), domNode).get(0);
                 }
                 /* END */
