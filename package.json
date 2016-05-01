@@ -45,5 +45,8 @@
     "karma-jasmine-html-reporter-sourcemaps": "^0.1.1",
     "mkdirp": "^0.5.1",
     "typescript": "^1.8.9"
+  },
+  "dependencies": {
+    "json-stringify-safe": "^5.0.1"
   }
 }

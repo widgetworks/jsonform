@@ -114,6 +114,17 @@
       <div class="span7">
         <h2>Generated form</h2>
         <div id="result" class="well">(please wait)</div>
+        
+        <div>
+          <!-- Debug elements -->
+          <button class="btn btn-small btn-warning js-reinit">Recreate form</button>
+          
+          <h4>Effective schema:</h4>
+          <pre id="debug-schema" class="code">
+            <!-- The generated schema will be output here. -->
+          </pre>
+        </div>
+        
       </div>
     </div>
 
@@ -148,6 +159,8 @@
     <!--<script src="../lib/jsonform.js"></script>-->
     <script src="../build/jsonform.js"></script>
 
+    <script src="../deps/json-stringify-safe.js"></script>
+    <script src="playground-debug.js"></script>
     <script src="playground.js"></script>
   </body>
 </html>

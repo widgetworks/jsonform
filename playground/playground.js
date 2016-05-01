@@ -172,7 +172,10 @@ $('document').ready(function () {
         return true;
       };
       $('#result').html('<form id="result-form" class="form-vertical"></form>');
-      $('#result-form').jsonForm(createdForm);
+      var formTree = $('#result-form').jsonForm(createdForm);
+      
+      $(document).trigger('jsonform.create', formTree);
+      
     }
     catch (e) {
       var stack = '';
@@ -194,7 +197,8 @@ ${e}</pre>
   };
 
   // Render the form
-  $('#form').jsonForm(formObject);
+  var formTree = $('#form').jsonForm(formObject);
+  $(document).trigger('jsonform.create', formTree);
 
   // Wait until ACE is loaded
   var itv = window.setInterval(function() {
@@ -205,4 +209,13 @@ ${e}</pre>
       loadExample(example);
     }
   }, 1000);
+  
+  
+  /**
+   * Debug behaviour.
+   */
+  $('.js-reinit').on('click', function(){
+    // Reinitalise the form (so we can debug the startup process).
+    generateForm();
+  });
 });
