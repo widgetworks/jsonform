@@ -135,8 +135,12 @@ namespace jsonform {
          * @private
          */
         _normaliseRootSchema(rootSchema){
+            if (!rootSchema){
+                return rootSchema;
+            }
+            
             // TODO: Do we need to handle top-level array types?
-            if (rootSchema && !rootSchema.properties) {
+            if (!rootSchema.properties) {
                 /*
                 // Rewrite a shorthand schema:
                 {
@@ -185,6 +189,9 @@ namespace jsonform {
                     type: 'object',
                     properties: rootSchema
                 };
+            } else if (!rootSchema.type){
+                // Make sure we have a type.
+                rootSchema.type = 'object';
             }
             
             return rootSchema;
@@ -312,7 +319,13 @@ namespace jsonform {
                 
                 if (schema.items) {
                     if (Array.isArray(schema.items)) {
-                        throw new Error(`the items property of array property "${keys.join('.')}" in the schema definition must be an object`);
+                        if (schema.items.length == 0){
+                            schema.items = {};
+                        } else if (schema.items.length == 1){
+                            schema.items = schema.items[0];
+                        } else if (schema.items.length > 1) {
+                            throw new Error(`the items property of array property "${keys.join('.')}" is an array with multiple definitions. The array 'items' must be an object, or array with a single element.`);
+                        }
                     }
                     
                     // Process the array items in the same way

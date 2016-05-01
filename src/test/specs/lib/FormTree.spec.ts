@@ -316,35 +316,66 @@ describe('FormTree', function(){
             });
             
             
-            it('throws error if array `items` is not an object', function(){
-                schema = {
-                    properties: {
-                        customer: {
-                            "title": "Customer",
-                            "description": "json-schema v3 style 'required'",
-                            "type": "array",
-                            "items": [
-                                {
-                                    "type": "object",
-                                    "required": ["location", "code"],
-                                    "properties": {
-                                        "location": {
-                                            "type": "string"
-                                        },
-                                        "code": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                };
+            /**
+             * `array.items`
+             */
+            describe('`array.items`', function(){
                 
-                expect(function(){
-                    formTree._convertSchemaV3ToV4(schema);
-                }).toThrowError('the items property of array property "customer" in the schema definition must be an object');
+                it('with empty array', function(done){
+                	loadFixture('lib/convert-schema/05-array-items.json').then(function(_fixture){
+                        var fixture = _fixture['empty-array'];
+                        
+                        var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                        expect(result).toEqual(fixture.$expected);
+                        
+                        done();
+                    }, done);
+                });
+                
+                
+                it('with one element', function(done){
+                	loadFixture('lib/convert-schema/05-array-items.json').then(function(_fixture){
+                        var fixture = _fixture['single-element'];
+                        
+                        var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                        
+                        expect(result).toEqual(fixture.$expected);
+                        
+                        done();
+                    }, done);
+                });
+                
+                
+                it('with object `items` definition', function(done){
+                	loadFixture('lib/convert-schema/05-array-items.json').then(function(_fixture){
+                        var fixture = _fixture['object-type'];
+                        
+                        var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                        
+                        expect(result).toEqual(fixture.$expected);
+                        
+                        done();
+                    }, done);
+                });
+                
+                
+                it('throws error if array `items` has length > 1', function(done){
+                    loadFixture('lib/convert-schema/05-array-items.json').then(function(_fixture){
+                        var fixture = _fixture['multiple-elements'];
+                        
+                        expect(function(){
+                            formTree._convertSchemaV3ToV4(fixture.$source);
+                        }).toThrowError('the items property of array property "customer" is an array with multiple definitions. The array \'items\' must be an object, or array with a single element.');
+                        
+                        
+                        done();
+                    }, done);
+                });
+                
+            	
+            	
             });
+            // End of '`array.items`'.
             
             
             /**

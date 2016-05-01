@@ -1,0 +1,182 @@
+{
+    "empty-array": {
+        "$source": {
+            
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "customer": {
+                        "title": "Customer",
+                        "description": "json-schema v3 style 'required'",
+                        "type": "array",
+                        "items": []
+                    }
+                }
+            }
+            
+        },
+        "$expected": {
+            
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "customer": {
+                        "title": "Customer",
+                        "description": "json-schema v3 style 'required'",
+                        "type": "array",
+                        "items": {}
+                    }
+                }
+            }
+            
+        }
+    },
+    
+    
+    "single-element": {
+        "$source": {
+            
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "customer": {
+                        "title": "Customer",
+                        "description": "json-schema v3 style 'required'",
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "location": {
+                                        "type": "string",
+                                        "required": true
+                                    },
+                                    "code": {
+                                        "type": "integer",
+                                        "required": true
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+            
+        },
+        "$expected": {
+            
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "customer": {
+                        "title": "Customer",
+                        "description": "json-schema v3 style 'required'",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["location", "code"],
+                            "properties": {
+                                "location": {
+                                    "type": "string"
+                                },
+                                "code": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
+    },
+    
+    
+    "multiple-elements": {
+        "$source": {
+            
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "customer": {
+                        "title": "Customer",
+                        "description": "json-schema v3 style 'required'",
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "integer"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            }
+            
+        },
+        "$expected": "This should throw an error because the array items has multiple items"
+    },
+    
+    
+    "object-type": {
+        "$source": {
+            
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "customer": {
+                        "title": "Customer",
+                        "description": "json-schema v3 style 'required'",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "location": {
+                                    "type": "string",
+                                    "required": true
+                                },
+                                "code": {
+                                    "type": "integer",
+                                    "required": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+        },
+        "$expected": {
+            
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "customer": {
+                        "title": "Customer",
+                        "description": "json-schema v3 style 'required'",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["location", "code"],
+                            "properties": {
+                                "location": {
+                                    "type": "string"
+                                },
+                                "code": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
+    }
+}
