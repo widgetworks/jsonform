@@ -77,17 +77,13 @@ namespace jsonform {
             // Compute form prefix if no prefix is given.
             this.formDesc.prefix = this.formDesc.prefix ||
                 'jsonform-' + _.uniqueId();
-
+            
+            
             /**
-             * 2016-04-09
-             * TODO: Update this to allow full schema as well as shorthand.
+             * 2016-05-01
+             * Normalise the jsonform shorthand schema back into a proper full schema object.
              */
-            // JSON schema shorthand
-            if (this.formDesc.schema && !this.formDesc.schema.properties) {
-                this.formDesc.schema = {
-                    properties: this.formDesc.schema
-                };
-            }
+            this.formDesc.schema = this._normaliseRootSchema(this.formDesc.schema);
             
             
             /**
@@ -121,9 +117,7 @@ namespace jsonform {
             this.formDesc.params = this.formDesc.params || {};
 
             // Create the root of the tree
-            this.root = new FormNode();
-            this.root.ownerTree = this;
-            this.root.view = jsonform.elementTypes['root'];
+            this.root = this._getRootNode(this.formDesc.schema);
 
             // Generate the tree from the form description
             this.buildTree();
@@ -131,6 +125,88 @@ namespace jsonform {
             // Compute the values associated with each node
             // (for arrays, the computation actually creates the form nodes)
             this.computeInitialValues();
+        }
+    
+    
+        /**
+         * If we've been given a shorthand schema object then
+         * expand it back out to a proper top-level schema object.
+         * 
+         * @private
+         */
+        _normaliseRootSchema(rootSchema){
+            // TODO: Do we need to handle top-level array types?
+            if (rootSchema && !rootSchema.properties) {
+                /*
+                // Rewrite a shorthand schema:
+                {
+                    "schema": {
+                        "message": {
+                            "type": "string",
+                            "title": "Message"
+                        },
+                        "author": {
+                            "type": "object",
+                            "title": "Author",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "title": "Name"
+                                },
+                            }
+                        }
+                    }
+                }
+                
+                // Into a proper schema object:
+                {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "title": "Message"
+                            },
+                            "author": {
+                                "type": "object",
+                                "title": "Author",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "title": "Name"
+                                    },
+                                }
+                            }
+                        }
+                    }
+                }
+                */
+                rootSchema = {
+                    type: 'object',
+                    properties: rootSchema
+                };
+            }
+            
+            return rootSchema;
+        }
+    
+    
+        /**
+         * Initialise the root node.
+         * 
+         * NOTE: We assign `schemaRoot` as `root.schemaElement` so 
+         * top-level required fields work with V4 schemas.
+         * 
+         * @private
+         */
+        _getRootNode(schemaRoot){
+            var root = new FormNode();
+            root.ownerTree = this;
+            root.view = jsonform.elementTypes['root'];
+            
+            root.schemaElement = schemaRoot;
+            
+            return root;
         }
     
     
