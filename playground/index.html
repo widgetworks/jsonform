@@ -161,6 +161,15 @@
 
     <script src="../deps/json-stringify-safe.js"></script>
     <script src="playground-debug.js"></script>
-    <script src="playground.js"></script>
+    <!--<script src="playground.js"></script>-->
+    
+    <script src="../node_modules/systemjs/dist/system.src.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      System.config({
+        baseURL: '../build/playground',
+        defaultJSExtensions: true
+      });
+      System.import('playground-entry.js');
+    </script>
   </body>
 </html>

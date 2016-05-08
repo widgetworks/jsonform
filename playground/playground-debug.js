@@ -16,4 +16,14 @@ $(function ($){
         $('#debug-schema').text(json);
     }
     
+    
+    /**
+     * TODO: Cycle test - load remote schema and json, then save
+     * and compare against original.
+     * 
+     * We expect that the saved version is the same as the original.
+     * 
+     * Use json-diff-patch to show differences.
+     */
+    
 });

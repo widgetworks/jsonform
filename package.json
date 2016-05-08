@@ -10,6 +10,7 @@
     "clean": "rm -r build/*",
     "ts": "tsc -p src/tsconfig.json",
     "tsw": "npm run ts -- --watch",
+    "tsp": "tsc -p src/playground/tsconfig.json",
     "dom-compare-pre": "node scripts/dom-compare-pre.js",
     "dom-compare-do": "browserify src/test/lib/dom-compare.js --standalone domCompare -o build/test/lib/dom-compare.js",
     "dom-compare": "npm run dom-compare-pre && npm run dom-compare-do",
@@ -47,6 +48,7 @@
     "typescript": "^1.8.9"
   },
   "dependencies": {
-    "json-stringify-safe": "^5.0.1"
+    "json-stringify-safe": "^5.0.1",
+    "systemjs": "^0.19.27"
   }
 }
