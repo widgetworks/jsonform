@@ -487,6 +487,7 @@ namespace jsonform {
                 var formEl = this.formDesc.customFormItems[formElement.key];
                 if (formEl !== undefined) {
                     formEl.key = formElement.key;
+                    formEl.keyOnParent = formElement.keyOnParent;
                     formElement = formEl;
                 }
             }
