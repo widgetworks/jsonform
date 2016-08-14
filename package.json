@@ -1,5 +1,5 @@
 {
-  "name": "json-form",
+  "name": "@wiwo/jsonform",
   "version": "1.0.0",
   "main": "./lib/jsonform.js",
   "user": "Joshfire",
