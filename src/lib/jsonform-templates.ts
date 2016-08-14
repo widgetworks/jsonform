@@ -318,14 +318,18 @@ namespace jsonform {
 					if (formElement.aceMode) {
 						editor.getSession().setMode("ace/mode/" + formElement.aceMode);
 					}
+					if (formElement.aceOptions){
+                        editor.setOptions(formElement.aceOptions);
+                    }
 					editor.getSession().setTabSize(2);
 
 					// Set the contents of the initial manifest file
 					var valueStr = node.value;
-					if (valueStr === null || valueStr === undefined)
+					if (valueStr === null || valueStr === undefined){
 						valueStr = '';
-					else if (typeof valueStr == 'object' || Array.isArray(valueStr))
+					} else if (typeof valueStr == 'object' || Array.isArray(valueStr)){
 						valueStr = JSON.stringify(valueStr, null, 2);
+					}
 					editor.getSession().setValue(valueStr);
 
 					//TODO this is clearly sub-optimal
@@ -352,13 +356,18 @@ namespace jsonform {
 					return;
 				}
 
-				// Wait until ACE is loaded
-				var itv = window.setInterval(function() {
-					if (window.ace) {
-						window.clearInterval(itv);
-						setup();
-					}
-				}, 1000);
+				if (window.ace){
+                    // Setup immediately
+                    setup();
+                } else {
+                    // Wait until ACE is loaded
+                    var itv = window.setInterval(function() {
+                        if (window.ace) {
+                            window.clearInterval(itv);
+                            setup();
+                        }
+                    },1000);
+                }
 			}
 		},
 		'checkbox': {
