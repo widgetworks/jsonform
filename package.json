@@ -45,10 +45,10 @@
     "karma-jasmine": "^0.3.8",
     "karma-jasmine-html-reporter-sourcemaps": "^0.1.1",
     "mkdirp": "^0.5.1",
+    "systemjs": "^0.19.27",
     "typescript": "^1.8.9"
   },
   "dependencies": {
-    "json-stringify-safe": "^5.0.1",
-    "systemjs": "^0.19.27"
+    "json-stringify-safe": "^5.0.1"
   }
 }
