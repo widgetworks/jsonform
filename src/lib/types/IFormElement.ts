@@ -117,6 +117,7 @@ namespace jsonform {
          */
         aceTheme?: string;  // Otherwise theme defaults to 'twilight'
         aceMode?: string;
+        aceOptions?: any;
         
         
         /**
