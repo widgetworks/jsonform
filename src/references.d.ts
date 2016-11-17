@@ -2,6 +2,12 @@ declare var _: any;
 declare var exports: any;
 declare var require: any;
 
+declare var jQuery: any;
+declare var $: any;
+
+// ACE editor
+declare var ace: any;
+
 interface Window {
 	ace: any;
 	Modernizr: any;
