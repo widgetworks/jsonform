@@ -791,7 +791,7 @@ namespace jsonform {
 
             // Flag a list of checkboxes with multiple choices
             if ((formElement.type === 'checkboxes' || formElement.type === 'checkboxbuttons') && schemaElement.items) {
-                var theItem = Array.isArray(schemaElement.items) ? schemaElement.items[0] : schemaElement.items;
+                var theItem: any = Array.isArray(schemaElement.items) ? schemaElement.items[0] : schemaElement.items;
                 if (formElement.options) {
                     // options only but no enum mode, since no enum, we can use only the value mode
                     this._prepareOptions(formElement);

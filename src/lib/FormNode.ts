@@ -1323,7 +1323,7 @@ namespace jsonform {
             var node = this;
             var handlers = null;
             var handler = null;
-            var formData = _.clone(this.ownerTree.formDesc.tpldata) || {};
+            var formData: IFormTemplateData = _.clone(this.ownerTree.formDesc.tpldata) || {};
             
             // Debugging - Coridyn: Callback to form-level onInsert method.
             // Always call this regardless of if there is a formElement.
@@ -1394,19 +1394,12 @@ namespace jsonform {
 
                 // Auto-update legend based on the input field that's associated with it
                 if (this.formElement.legend && this.legendChild && this.legendChild.formElement) {
-                    function onLegendChildChange(evt) {
-                        if (node.formElement && node.formElement.legend && node.parentNode) {
-                            var legendTmpl = applyArrayPath(node.formElement.legend, node.arrayPath);
-                            formData.idx = (node.arrayPath.length > 0) ?
-                                node.arrayPath[node.arrayPath.length - 1] + 1 :
-                                node.childPos + 1;
-                            formData.value = $(evt.target).val();
-                            node.legend = util._template(legendTmpl, formData, util.valueTemplateSettings);
-                            $(node.parentNode.el).trigger('legendUpdated');
-                        }
-                    }
-                    $(this.legendChild.el).on('keyup', onLegendChildChange);
-                    $(this.legendChild.el).on('change', onLegendChildChange);
+                    $(this.legendChild.el).on('keyup', (e) => {
+                        this._onLegendChildChange(e, node, formData);
+                    });
+                    $(this.legendChild.el).on('change', (e) => {
+                        this._onLegendChildChange(e, node, formData);
+                    });
                 }
             }
 
@@ -1415,7 +1408,30 @@ namespace jsonform {
                 child.enhance();
             });
         }
-
+        
+        
+        /**
+         * 2017-02-07
+         * This function was split out of `enhance()` because nested function definitions aren't
+         * allowed in strict mode.
+         * 
+         * Intead we've made the event listener a member method here.
+         * 
+         * @param {Event}            evt      [description]
+         * @param {FormNode}          node     [description]
+         * @param {IFormTemplateData} formData [description]
+         */
+        _onLegendChildChange(evt, node: FormNode, formData: IFormTemplateData) {
+            if (node.formElement && node.formElement.legend && node.parentNode) {
+                var legendTmpl = applyArrayPath(node.formElement.legend, node.arrayPath);
+                formData.idx = (node.arrayPath.length > 0) ?
+                    node.arrayPath[node.arrayPath.length - 1] + 1 :
+                    node.childPos + 1;
+                formData.value = $(evt.target).val();
+                node.legend = util._template(legendTmpl, formData, util.valueTemplateSettings);
+                $(node.parentNode.el).trigger('legendUpdated');
+            }
+        }
 
 
         /**

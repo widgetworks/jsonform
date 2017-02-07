@@ -411,7 +411,7 @@ namespace jsonform {
 			'getElement': function(el) {
 				return $(el).parent().get(0);
 			},
-			'onBeforeRender': function(data, node: FormNode_TransloadIt) {
+			'onBeforeRender': function(data: ITransloadItRenderData, node: FormNode_TransloadIt) {
 				var ownerTree: FormTree_TransloadIt = node.ownerTree;
 
 				if (!ownerTree._transloadit_generic_public_index) {
@@ -611,7 +611,7 @@ namespace jsonform {
 			'</div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onBeforeRender': function(data, node: FormNode) {
+			'onBeforeRender': function(data: IImageSelectRenderData, node: FormNode) {
 				var elt = node.getFormElement();
 				var nbRows = null;
 				var maxColumns = elt.imageSelectorColumns || 5;
@@ -683,7 +683,7 @@ namespace jsonform {
 			'</div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onBeforeRender': function(data, node: FormNode) {
+			'onBeforeRender': function(data: IIconSelectRenderData, node: FormNode) {
 				var elt = node.getFormElement();
 				var nbRows = null;
 				var maxColumns = elt.imageSelectorColumns || 5;
@@ -832,7 +832,7 @@ namespace jsonform {
 				}
 				return template;
 			},
-			'onBeforeRender': function(data, node: FormNode) {
+			'onBeforeRender': function(data: ICheckboxesRenderData, node: FormNode) {
 				// Build up choices from the enumeration/options list
 				if (!node || !node.schemaElement || !node.schemaElement.items) return;
 				var choices = node.formElement.options;
@@ -951,7 +951,7 @@ namespace jsonform {
 			'template': '<div id="<%= node.id %>"><%= choiceshtml %></div>',
 			'fieldtemplate': true,
 			'inputfield': true,
-			'onBeforeRender': function(data, node: FormNode) {
+			'onBeforeRender': function(data: ICheckboxesRenderData, node: FormNode) {
 				// Build up choices from the enumeration list
 				var choices = null;
 				var choiceshtml = null;
@@ -1184,7 +1184,7 @@ namespace jsonform {
             'template': '<tbody id="<%= id %>"><%= children %></tbody>',
             'fieldtemplate': false,
             'childSelector': '> tbody',
-            'onBeforeRender': function(data/*: IRenderData*/, node: FormNode) {
+            'onBeforeRender': function(data: ITableObjectRenderData, node: FormNode) {
                 // Check the index here -> output that in the 
                 //console.log('tableobject: data=', data, '\nnode=', node);
 
@@ -1410,7 +1410,7 @@ namespace jsonform {
 					inner +
 					'</div>';
 			},
-			'onBeforeRender': function(data, node: FormNode) {
+			'onBeforeRender': function(data: ITabRenderData, node: FormNode) {
 				// Generate the initial 'tabs' from the children
 				/*var tabs = '';
 				_.each(node.children, function (child, idx) {
@@ -1683,7 +1683,7 @@ namespace jsonform {
 					inner +
 					'</div>';
 			},
-			'onBeforeRender': function(data, node: FormNode) {
+			'onBeforeRender': function(data: ISelectFieldsetRenderData, node: FormNode) {
 				// Before rendering, this function ensures that:
 				// 1. direct children have IDs (used to show/hide the tabs contents)
 				// 2. the tab to active is flagged accordingly. The active tab is
@@ -1858,7 +1858,7 @@ namespace jsonform {
 							window.open(option.href, option.target);
 						}
 						else {
-							window.location = option.href;
+							(<any>window).location = option.href;
 						}
 					}
 					if (option.submit) {

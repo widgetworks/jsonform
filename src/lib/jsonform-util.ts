@@ -2,7 +2,8 @@ namespace jsonform.util {
     
     // Globals that are required for jsonform to run
     var serverside = (typeof exports !== 'undefined');
-    export var global = (typeof exports !== 'undefined') ? exports : window;
+    // export var global = (typeof exports !== 'undefined') ? exports : window;
+    export var global = (typeof global !== 'undefined') ? global : window;
     export var $ = (typeof global.jQuery !== 'undefined') ? global.jQuery : <any>{ fn: {} };
     export var _ = (typeof global._ !== 'undefined') ? global._ : null;
     
