@@ -6,8 +6,8 @@
 	},
 	"compilerOptions": {
 //		"sourceMap": true,
-		"inlineSourceMap": true,
-	    "inlineSources": true,
+//		"inlineSourceMap": true,
+//	    "inlineSources": true,
         
 		"declaration": true,
         "outFile": "../build/jsonform.js",
@@ -15,6 +15,7 @@
 		"target": "es5"
 	},
     "files": [
+        "copyright.ts",
         "lib/jsonform-util.ts",
         "lib/jsonform-types.ts",
         "lib/jsonform-input-types.ts",
