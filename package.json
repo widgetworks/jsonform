@@ -6,11 +6,14 @@
   "domain": "joshfire.com",
   "description": "Client-side JavaScript library that generates HTML forms from structured data models expressed using a JSON schema, possibly completed by a form layout description.",
   "scripts": {
-    "serve": "http-server",
     "clean": "rm -r build/*",
+    "build": "npm run ts && npm run copy-build",
     "ts": "tsc -p src/tsconfig.json",
     "tsw": "npm run ts -- --watch",
-    "tsp": "tsc -p src/playground/tsconfig.json",
+    "copy-build": "copyfiles -f build/jsonform.js build/jsonform.d.ts lib"
+  },
+  "disabledScripts": {
+    "serve": "http-server",
     "dom-compare-pre": "node scripts/dom-compare-pre.js",
     "dom-compare-do": "browserify src/test/lib/dom-compare.js --standalone domCompare -o build/test/lib/dom-compare.js",
     "dom-compare": "npm run dom-compare-pre && npm run dom-compare-do",
@@ -34,21 +37,22 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "browserify": "^13.0.0",
+    "concurrently": "^2.2.0",
+    "copyfiles": "^1.0.0",
+    "mkdirp": "^0.5.1",
+    "typescript": "^2.1.0"
+  },
+  "dependencies": {
+    "json-stringify-safe": "^5.0.1"
+  },
+  "disabledDependencies": {
     "dom-compare": "^0.2.1",
-    "http-server": "^0.9.0",
     "jasmine-core": "^2.4.1",
     "jasmine-jquery": "^2.1.1",
     "karma": "^0.13.22",
     "karma-chrome-launcher": "^0.2.3",
     "karma-growl-reporter": "^0.1.1",
     "karma-jasmine": "^0.3.8",
-    "karma-jasmine-html-reporter-sourcemaps": "^0.1.1",
-    "mkdirp": "^0.5.1",
-    "systemjs": "^0.19.27",
-    "typescript": "^1.8.9"
-  },
-  "dependencies": {
-    "json-stringify-safe": "^5.0.1"
+    "karma-jasmine-html-reporter-sourcemaps": "^0.1.1"
   }
 }
