@@ -207,6 +207,14 @@ namespace jsonform {
          * @private
          */
         _getRootNode(schemaRoot){
+            /**
+             * 2017-07-06 Coridyn
+             * TODO: Update this processing so the rootNode is more consistent with other FormNode instances.
+             * 
+             * Specifically, it should have a `formElement` property which has the key/id values for this node on it.
+             * Example usecase might be to walk up the tree and build up an id by concatenating each `formNode.formElement.id`
+             */
+            
             var root = new FormNode();
             root.ownerTree = this;
             root.view = jsonform.elementTypes['root'];
