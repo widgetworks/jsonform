@@ -744,6 +744,18 @@ namespace jsonform {
             }
 
             if (this.view && this.view.inputfield && this.schemaElement) {
+                /**
+                 * 2017-07-06 Coridyn
+                 * Previous value was to not set defaults if there is any sort of json structure passed to jsonform.
+                 * This doesn't work for us where we have an existing data structure to which we want to add new properties
+                 * with default values (i.e. as schemas change over time).
+                 * 
+                 * This change will take the default value if there is not an explicit value given on `values`.
+                 * 
+                 * TODO: Consider only using default if value is `undefined` and not `null`.
+                 * e.g. `undefined` indicates there is no value at all so take default, whereas `null` indicates there is a value but that value is empty
+                 */
+                
                 // Case 1: simple input field
                 if (values) {
                     // Form has already been submitted, use former value if defined.
@@ -753,7 +765,11 @@ namespace jsonform {
                         this.value = jsonform.util.getObjKey(values, this.key);
                     }
                 }
-                else if (!ignoreDefaultValues) {
+                
+                /**
+                 * CFH: Set the default value if no value was retrieved above 
+                 */
+                if (!ignoreDefaultValues) {
                     // No previously submitted form result, use default value
                     // defined in the schema if it's available and not already
                     // defined in the form element
