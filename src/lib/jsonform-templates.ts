@@ -1071,14 +1071,13 @@ namespace jsonform {
 
                     // Iterate over each of the children and render out the header.
                     _.each(headerNode.children, function(formNode) {
-                        // TODO: Skip nested array object types, they'll be put in as their own tables.
-                        // What about Object types?
-                        // if (formNode.schemaElement.type != 'array'){
+                    	// Assign a unique path-based id for this table heading
+                    	let headerId = formNode.formElement.id;
+                    	
                         // Everything should have a title.
-                        headerRow.push('<th>');
+                        headerRow.push(`<th id="${headerId}">`);
                         headerRow.push(formNode.title);
                         headerRow.push('</th>');
-                        // }
                     });
 
                     // Wrap with a row and render.
