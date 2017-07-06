@@ -363,6 +363,11 @@ namespace jsonform {
 
         // Keep a direct pointer to the JSON schema for form submission purpose
         formElt.data("jsonform-tree", form);
+        
+        /**
+         * Add marker class indicating this is the root of a jsonform tree.
+         */
+        formElt.addClass("jsonform--root");
 
         if (options.submitEvent) {
             formElt.unbind((options.submitEvent) + '.jsonform');
