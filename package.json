@@ -10,7 +10,8 @@
     "build": "npm run ts && npm run copy-build",
     "ts": "tsc -p src/tsconfig.json",
     "tsw": "npm run ts -- --watch",
-    "copy-build": "copyfiles -f build/jsonform.js build/jsonform.d.ts lib"
+    "copy-build": "copyfiles -f build/jsonform.js build/jsonform.d.ts lib",
+    "test": "jest"
   },
   "disabledScripts": {
     "serve": "http-server",
@@ -37,9 +38,12 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^22.1.2",
     "concurrently": "^2.2.0",
     "copyfiles": "^1.0.0",
+    "jest": "^22.2.2",
     "mkdirp": "^0.5.1",
+    "ts-jest": "^22.0.4",
     "typescript": "^2.1.0"
   },
   "dependencies": {
@@ -54,5 +58,24 @@
     "karma-growl-reporter": "^0.1.1",
     "karma-jasmine": "^0.3.8",
     "karma-jasmine-html-reporter-sourcemaps": "^0.1.1"
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsConfigFile": "src/tsconfig.json"
+      }
+    },
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   }
 }
