@@ -7,8 +7,10 @@
   "description": "Client-side JavaScript library that generates HTML forms from structured data models expressed using a JSON schema, possibly completed by a form layout description.",
   "scripts": {
     "clean": "rm -r build/*",
-    "build": "npm run ts && npm run copy-build",
+    "build": "npm run wp && npm run copy-build",
     "ts": "tsc -p src/tsconfig.json",
+    "wp": "webpack --mode development",
+    "wpw": "webpack -c webpack.config.js --watch",
     "tsw": "npm run ts -- --watch",
     "copy-build": "copyfiles -f build/jsonform.js build/jsonform.d.ts lib",
     "test": "jest"
@@ -44,10 +46,15 @@
     "jest": "^22.2.2",
     "mkdirp": "^0.5.1",
     "ts-jest": "^22.0.4",
-    "typescript": "^2.1.0"
+    "ts-loader": "^4.2.0",
+    "typescript": "^2.8.1",
+    "webpack": "^4.5.0"
   },
   "dependencies": {
-    "json-stringify-safe": "^5.0.1"
+    "jquery": "^3.3.1",
+    "json-stringify-safe": "^5.0.1",
+    "lodash": "^3.10.1",
+    "webpack-cli": "^2.0.14"
   },
   "disabledDependencies": {
     "dom-compare": "^0.2.1",

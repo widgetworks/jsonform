@@ -1,23 +1,28 @@
+import _ from 'lodash';
+
+import {JsonForm} from "../../../../src/jsonform";
+import {FormTree} from "../../../../src/lib/FormTree";
+import {IFormDescriptor} from "../../../lib/types/IFormDescriptor";
+import * as classes from '../../../lib/formclasses';
+
 /**
  * FormTree
  */
 describe('FormTree', function(){
-    
-    var FormTree: typeof jsonform.FormTree;
-    var formTree: jsonform.FormTree;
-    
     
     /**
      * #initialize()
      */
     describe('#initialize()', function(){
         
+        let formTree: FormTree;
+        
+        
         beforeEach(function(){
-            FormTree = jsonform.FormTree;
             formTree = new FormTree();
             
-            spyOn(formTree, '_convertSchemaV3ToV4').and.callThrough();
-            spyOn(formTree, '_resolveRefs').and.callThrough();
+            spyOn(FormTree.prototype, '_convertSchemaV3ToV4').and.callThrough();
+            spyOn(FormTree.prototype, '_resolveRefs').and.callThrough();
         });
         
         
@@ -41,10 +46,10 @@ describe('FormTree', function(){
          */
         describe('#defaultClasses', function(){
             
-            var _schema: jsonform.IFormDescriptor;
+            var _schema: IFormDescriptor;
             
             beforeEach(function(){
-            	spyOn(jsonform, 'getDefaultClasses').and.callThrough();
+            	spyOn(classes, 'getDefaultClasses').and.callThrough();
                 
                 _schema = {
                     schema: {}
@@ -53,7 +58,7 @@ describe('FormTree', function(){
             
             
             afterEach(function(){
-            	jsonform.isBootstrap2 = false;
+            	JsonForm.isBootstrap2 = false;
             });
             
             
@@ -62,7 +67,7 @@ describe('FormTree', function(){
                 
                 formTree.initialize(_schema);
                 
-                expect(jsonform.getDefaultClasses).toHaveBeenCalled();
+                expect(classes.getDefaultClasses).toHaveBeenCalled();
                 expect(formTree.defaultClasses).not.toBeNull();
             });
             
@@ -70,7 +75,7 @@ describe('FormTree', function(){
             it('choose bootstrap3 by default', function(){
                 formTree.initialize(_schema);
                 
-                expect(jsonform.getDefaultClasses).toHaveBeenCalledWith(false);
+                expect(classes.getDefaultClasses).toHaveBeenCalledWith(false);
                 expect(formTree.defaultClasses).toEqual(jasmine.objectContaining({
                     groupClass: 'form-group' // bootstrap 3 class
                 }));
@@ -84,7 +89,7 @@ describe('FormTree', function(){
                 };
                 formTree.initialize(_schema);
                 
-                expect(jsonform.getDefaultClasses).toHaveBeenCalledWith(true);
+                expect(classes.getDefaultClasses).toHaveBeenCalledWith(true);
                 expect(formTree.defaultClasses).toEqual(jasmine.objectContaining({
                     groupClass: 'control-group' // bootstrap 2 class
                 }));
@@ -92,10 +97,10 @@ describe('FormTree', function(){
             
             
             it('choose bootstrap2 from `jsonform.isBootstrap2`', function(){
-                jsonform.isBootstrap2 = true;
+                JsonForm.isBootstrap2 = true;
                 formTree.initialize(_schema);
                 
-                expect(jsonform.getDefaultClasses).toHaveBeenCalledWith(true);
+                expect(classes.getDefaultClasses).toHaveBeenCalledWith(true);
                 expect(formTree.defaultClasses).toEqual(jasmine.objectContaining({
                     groupClass: 'control-group' // bootstrap 2 class
                 }));
@@ -127,7 +132,7 @@ describe('FormTree', function(){
          */
         describe('initialisation process', function(){
             
-            var _schema: jsonform.IFormDescriptor;
+            var _schema: IFormDescriptor;
             
             
         	it('invoke `#_convertSchemaV3ToV4()` with `formDesc.schema`', function(){
@@ -265,7 +270,7 @@ describe('FormTree', function(){
         	_.extend(schema, {
                 readonly: true
             });
-            var result = formTree._convertSchemaV3ToV4(schema);
+            var result = FormTree.prototype._convertSchemaV3ToV4(schema);
             
             expect(result).toEqual(jasmine.objectContaining({
                 readOnly: true
@@ -282,7 +287,7 @@ describe('FormTree', function(){
             it('convert boolean required to parent string list', function(done){
                 loadFixture('lib/convert-schema/01-boolean-required-to-string-list.json').then(function(fixture){
             	    // V3 schema
-                    var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                    var result = FormTree.prototype._convertSchemaV3ToV4(fixture.$source);
                     
                     // V4 schema result
                     expect(result).toEqual(fixture.$expected);
@@ -311,7 +316,7 @@ describe('FormTree', function(){
                 };
                 
                 expect(function(){
-                    formTree._convertSchemaV3ToV4(schema);
+                    FormTree.prototype._convertSchemaV3ToV4(schema);
                 }).toThrowError('field "customer.name"\'s required property should be either boolean or array of strings');
             });
             
@@ -325,7 +330,7 @@ describe('FormTree', function(){
                 	loadFixture('lib/convert-schema/05-array-items.json').then(function(_fixture){
                         var fixture = _fixture['empty-array'];
                         
-                        var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                        var result = FormTree.prototype._convertSchemaV3ToV4(fixture.$source);
                         expect(result).toEqual(fixture.$expected);
                         
                         done();
@@ -337,7 +342,7 @@ describe('FormTree', function(){
                 	loadFixture('lib/convert-schema/05-array-items.json').then(function(_fixture){
                         var fixture = _fixture['single-element'];
                         
-                        var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                        var result = FormTree.prototype._convertSchemaV3ToV4(fixture.$source);
                         
                         expect(result).toEqual(fixture.$expected);
                         
@@ -350,7 +355,7 @@ describe('FormTree', function(){
                 	loadFixture('lib/convert-schema/05-array-items.json').then(function(_fixture){
                         var fixture = _fixture['object-type'];
                         
-                        var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                        var result = FormTree.prototype._convertSchemaV3ToV4(fixture.$source);
                         
                         expect(result).toEqual(fixture.$expected);
                         
@@ -364,7 +369,7 @@ describe('FormTree', function(){
                         var fixture = _fixture['multiple-elements'];
                         
                         expect(function(){
-                            formTree._convertSchemaV3ToV4(fixture.$source);
+                            FormTree.prototype._convertSchemaV3ToV4(fixture.$source);
                         }).toThrowError('the items property of array property "customer" is an array with multiple definitions. The array \'items\' must be an object, or array with a single element.');
                         
                         
@@ -390,7 +395,7 @@ describe('FormTree', function(){
                     
                     it('`required` becomes `minLength`', function(done){
                         loadFixture('lib/convert-schema/04-convert-primitive-arrays.json').then(function(fixture){
-                            var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                            var result = FormTree.prototype._convertSchemaV3ToV4(fixture.$source);
                             expect(result).toEqual(fixture.$expected);
                             
                             done();
@@ -400,7 +405,7 @@ describe('FormTree', function(){
                     
                     it('doesn\'t overwrite existing `minLength`', function(done){
                     	loadFixture('lib/convert-schema/04-convert-primitive-arrays.json').then(function(fixture){
-                            var result = formTree._convertSchemaV3ToV4(fixture.$source);
+                            var result = FormTree.prototype._convertSchemaV3ToV4(fixture.$source);
                             expect(result).toEqual(fixture.$expected);
                             
                             done();
@@ -426,7 +431,7 @@ describe('FormTree', function(){
             loadFixture('lib/convert-schema/02-skips-v4-schema.json').then(function(fixture){
                 var sourceClone = _.cloneDeep(fixture.$source);
                 
-                var result = formTree._convertSchemaV3ToV4(sourceClone);
+                var result = FormTree.prototype._convertSchemaV3ToV4(sourceClone);
                 expect(result).toEqual(fixture.$source);
                 
                 done();
@@ -445,7 +450,7 @@ describe('FormTree', function(){
         it('resolves $ref value with `definitions` lookup', function(done){
         	loadFixture('lib/$ref/simple-ref.json')
                 .then(function(fixture){
-                    var result = formTree._resolveRefs(
+                    var result = FormTree.prototype._resolveRefs(
                         fixture.$source.properties,
                         fixture.$source.definitions
                     );
