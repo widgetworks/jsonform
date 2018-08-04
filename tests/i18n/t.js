@@ -4,10 +4,10 @@ var tests = [
     jsonform: {
       schema: {
         textfield: {
-          title: '{{hello}} {{user.name}}',
+          title: '<<hello>> <<user.name>>',
           type: 'string',
-          'default': '{{def}}',
-          description: '{{desc}}'
+          'default': '<<def>>',
+          description: '<<desc>>'
         },
         tagline: {
           type: 'string',
@@ -24,29 +24,29 @@ var tests = [
           type: 'array',
           items: {
             type: 'string',
-            title: '{{arr.title}} {{idx}}',
-            description: '{{arr.desc}}',
-            'default': '{{arr.default}}'
+            title: '<<arr.title>> <<idx>>',
+            description: '<<arr.desc>>',
+            'default': '<<arr.default>>'
           }
         }
       },
       form: [
         {
           key: 'textfield',
-          prepend: '{{prepend}}',
-          append: '{{append}}'
+          prepend: '<<prepend>>',
+          append: '<<append>>'
         },
         {
           key: 'tagline',
           titleMap: {
-            'happy': '{{tagline.happy}}',
-            'lifesucks': '{{tagline.lifesucks}}',
-            'cestlavie': '{{tagline.cestlavie}}'
+            'happy': '<<tagline.happy>>',
+            'lifesucks': '<<tagline.lifesucks>>',
+            'cestlavie': '<<tagline.cestlavie>>'
           }
         },
         {
           key: 'positive',
-          inlinetitle: '{{positive.label}}'
+          inlinetitle: '<<positive.label>>'
         },
         'arr'
       ],
@@ -81,10 +81,10 @@ var tests = [
     jsonform: {
       schema: {
         textfield: {
-          title: '{{hello}} {{user.name}}',
+          title: '<<hello>> <<user.name>>',
           type: 'string',
-          'default': '{{def}}',
-          description: '{{desc}}'
+          'default': '<<def>>',
+          description: '<<desc>>'
         },
         tagline: {
           type: 'string',
@@ -101,29 +101,29 @@ var tests = [
           type: 'array',
           items: {
             type: 'string',
-            title: '{{arr.title}} {{idx}}',
-            description: '{{arr.desc}}',
-            'default': '{{arr.default}}'
+            title: '<<arr.title>> <<idx>>',
+            description: '<<arr.desc>>',
+            'default': '<<arr.default>>'
           }
         }
       },
       form: [
         {
           key: 'textfield',
-          prepend: '{{prepend}}',
-          append: '{{append}}'
+          prepend: '<<prepend>>',
+          append: '<<append>>'
         },
         {
           key: 'tagline',
           titleMap: {
-            'happy': '{{tagline.happy}}',
-            'lifesucks': '{{tagline.lifesucks}}',
-            'cestlavie': '{{tagline.cestlavie}}'
+            'happy': '<<tagline.happy>>',
+            'lifesucks': '<<tagline.lifesucks>>',
+            'cestlavie': '<<tagline.cestlavie>>'
           }
         },
         {
           key: 'positive',
-          inlinetitle: '{{positive.label}}'
+          inlinetitle: '<<positive.label>>'
         },
         'arr'
       ],
@@ -153,3 +153,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'i18n');

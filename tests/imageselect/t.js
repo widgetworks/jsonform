@@ -275,3 +275,5 @@ var tests = [
     }
   },
 ];
+
+addTests(tests, 'imageselect');

@@ -81,3 +81,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'checkboxes');

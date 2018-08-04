@@ -120,3 +120,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'selectfieldset');

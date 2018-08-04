@@ -70,3 +70,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'actions');

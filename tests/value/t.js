@@ -7,12 +7,67 @@ var tests = [
           type: 'string',
           title: 'First field',
           description: 'The initial value should be that of the second field',
-          'default': '{{values.second}}'
+          'default': '<<values.second>>'
         },
         second: {
           type: 'string',
           title: 'Second field',
           'default': 'Hello copycat'
+        },
+        third: {
+          type: 'string',
+          title: 'Third field',
+          description: 'This should still work with a jsonform opening tag <<',
+          'default': 'This value has << an opening tag'
+        }
+      }
+    }
+  },
+  {
+    name: 'angular interpolation',
+    jsonform: {
+      schema: {
+        first: {
+          type: 'string',
+          title: 'First field',
+          description: 'This string should contain {{ angular interpolation characters }}',
+          'default': '{{data.test}}'
+        },
+        second: {
+          type: 'string',
+          title: 'Second field',
+          'default': 'Hello second'
+        },
+        third: {
+          type: 'string',
+          title: 'Third field',
+          description: 'This description should say "Hello second": <<values.second>>',
+          'default': 'Hello third'
+        },
+        fourth: {
+          type: 'string',
+          title: 'Fourth field',
+          description: 'This field should be empty'
+        }
+      }
+    }
+  },
+  {
+    name: 'html description',
+    jsonform: {
+      schema: {
+        first: {
+          type: 'string',
+          title: 'First field',
+          description: 'This description contains <b>some</b> <u>html</u> markup',
+          'default': '{{data.test}}'
+        },
+        second: {
+          type: 'string',
+          title: 'Second field',
+          description: `<p>This is a paragraph</p>
+<pre>This is a pre section with some {{angular delimiters}}</pre>`,
+          'default': '{{data.test}}'
         }
       }
     }
@@ -36,7 +91,7 @@ var tests = [
       form: [
         {
           key: 'first',
-          value: '{{values.second}}'
+          value: '<<values.second>>'
         },
         {
           key: 'second',
@@ -59,7 +114,7 @@ var tests = [
               label: {
                 type: 'string',
                 title: 'Label',
-                'default': 'Great thought {{idx}}'
+                'default': 'Great thought << idx >>'
               },
               desc: {
                 type: 'string',
@@ -80,7 +135,7 @@ var tests = [
               },
               {
                 key: 'thoughts[].desc',
-                value: '{{values.thoughts[].label}}\'s description'
+                value: '<<values.thoughts[].label>>\'s description'
               }
             ]
           }]
@@ -102,7 +157,7 @@ var tests = [
               label: {
                 type: 'string',
                 title: 'Label',
-                'default': 'Great thought {{idx}}'
+                'default': 'Great thought <<idx>>'
               },
               desc: {
                 type: 'string',
@@ -117,14 +172,14 @@ var tests = [
           type: 'tabarray',
           items: [{
             type: 'section',
-            legend: '{{idx}}. {{value}}',
+            legend: '<<idx>>. <<value>>',
             items: [
               {
                 key: 'thoughts[].label'
               },
               {
                 key: 'thoughts[].desc',
-                value: '{{values.thoughts[].label}}\'s description',
+                value: '<<values.thoughts[].label>>\'s description',
                 valueInLegend: true
               }
             ]
@@ -157,7 +212,7 @@ var tests = [
       form: [
         {
           key: 'first',
-          value: '{{values.second}}'
+          value: '<<values.second>>'
         },
         {
           key: 'second',
@@ -194,7 +249,7 @@ var tests = [
       form: [
         {
           key: 'first',
-          value: '{{values.second}}'
+          value: '<<values.second>>'
         },
         {
           key: 'second',
@@ -224,7 +279,7 @@ var tests = [
               label: {
                 type: 'string',
                 title: 'Label',
-                'default': 'Great thought {{idx}}'
+                'default': 'Great thought <<idx>>'
               },
               desc: {
                 type: 'string',
@@ -239,14 +294,14 @@ var tests = [
           type: 'tabarray',
           items: [{
             type: 'section',
-            legend: '{{idx}}. {{value}}',
+            legend: '<<idx>>. <<value>>',
             items: [
               {
                 key: 'thoughts[].label'
               },
               {
                 key: 'thoughts[].desc',
-                value: '{{values.thoughts[].label}}\'s description',
+                value: '<<values.thoughts[].label>>\'s description',
                 valueInLegend: true
               }
             ]
@@ -268,3 +323,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'value');

@@ -39,11 +39,11 @@ var tests = [
           items: [
             {
               type: 'fieldset',
-              title: 'Number {{idx}}',
+              title: 'Number <<idx>>',
               items: [
                 {
                   key: 'arr[]',
-                  title: 'Item {{idx}}'
+                  title: 'Item <<idx>>'
                 }
               ]
             }
@@ -72,12 +72,12 @@ var tests = [
           items: [
             {
               type: 'fieldset',
-              title: 'Number {{idx}}',
-              legend: '{{idx}}. {{value}}',
+              title: 'Number <<idx>>',
+              legend: '<<idx>>. <<value>>',
               items: [
                 {
                   key: 'arr[]',
-                  title: 'Item {{idx}}',
+                  title: 'Item <<idx>>',
                   valueInLegend: true
                 }
               ]
@@ -107,13 +107,13 @@ var tests = [
           items: [
             {
               type: 'fieldset',
-              title: 'Number {{idx}}',
-              legend: '{{idx}}. {{value}}',
+              title: 'Number <<idx>>',
+              legend: '<<idx>>. <<value>>',
               items: [
                 {
                   key: 'arr[]',
-                  title: 'Item {{idx}}',
-                  value: 'Hello number {{idx}}',
+                  title: 'Item <<idx>>',
+                  value: 'Hello number <<idx>>',
                   valueInLegend: true
                 }
               ]
@@ -143,13 +143,13 @@ var tests = [
           items: [
             {
               type: 'fieldset',
-              title: 'Number {{idx}}',
-              legend: '{{idx}}. {{value}}',
+              title: 'Number <<idx>>',
+              legend: '<<idx>>. <<value>>',
               items: [
                 {
                   key: 'arr[]',
-                  title: 'Item {{idx}}',
-                  value: 'Hello number {{idx}}',
+                  title: 'Item <<idx>>',
+                  value: 'Hello number <<idx>>',
                   valueInLegend: true
                 }
               ]
@@ -189,13 +189,13 @@ var tests = [
           items: [
             {
               type: 'fieldset',
-              title: 'Number {{idx}}',
-              legend: '{{idx}}. {{value}}',
+              title: 'Number <<idx>>',
+              legend: '<<idx>>. <<value>>',
               items: [
                 {
                   key: 'arr[].icon',
-                  title: 'Item {{idx}}',
-                  value: 'Hello number {{idx}}',
+                  title: 'Item <<idx>>',
+                  value: 'Hello number <<idx>>',
                   valueInLegend: true
                 }
               ]
@@ -214,3 +214,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'tabarray');

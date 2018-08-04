@@ -1,26 +1,42 @@
 var $tests = $('.tests');
-var idx = 0; //or enter the index like before. ex.: 5
-var limit = (idx == 0 ? tests.length - 1 : idx);
 
-for (idx; idx <= limit; idx++) {
-    if (!tests[idx].jsonform.form) {
-      tests[idx].jsonform.form = ['*'];
-    }
-    tests[idx].jsonform.form.push({
-      type: 'actions',
-      items: [
-        {
-          type: 'submit',
-          value: 'Submit'
+_tests.forEach(function(groupList, groupIndex){
+    const tests = groupList[0];
+    const title = groupList[1];
+    
+    let $groupEl = $(`
+<div class="group-wrapper group-wrapper--${groupIndex}">
+    <h1>${groupIndex}: ${title}</h1>
+</div>    
+`);
+    $tests.append($groupEl)
+    
+    tests.forEach(function(test, index){
+        let curJsonform = test.jsonform;
+        
+        if (!curJsonform.form) {
+          curJsonform.form = ['*'];
         }
-      ]
+        curJsonform.form.push({
+          type: 'actions',
+          items: [
+            {
+              type: 'submit',
+              value: 'Submit'
+            }
+          ]
+        });
+        curJsonform.onSubmit = function (errors, values) {
+          console.log(errors, values);
+        };
+        
+        let testWrapper = $(`<div class="test-wrapper test-wrapper--${groupIndex}-${index}"></div>`);
+        $groupEl.append(testWrapper);
+        $(`<h2>Test ${index}: "<span class="test-name">${test.name}</span>"</h2>`).appendTo(testWrapper);
+        $(`<form id="testform-${groupIndex}-${index}" class="form-vertical"></form>`)
+            .appendTo(testWrapper)
+            .jsonForm(curJsonform);
     });
-    tests[idx].jsonform.onSubmit = function (errors, values) {
-      console.log(errors, values);
-    };
+    
+});
 
-    $('<h1>Test "<span class="test-name"></span>"</h1>').appendTo($tests);
-    $('<form id="testform" class="form-vertical"></form>').appendTo($tests);
-    $tests.find(".test-name").last().html(tests[idx].name);
-    $tests.find("#testform").last().jsonForm(tests[idx].jsonform);
-}

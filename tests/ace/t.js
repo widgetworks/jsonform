@@ -43,3 +43,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'ace');

@@ -62,11 +62,11 @@ var tests = [
           items: [
             {
               type: 'fieldset',
-              title: 'Number {{idx}}',
+              title: 'Number <<idx>>',
               items: [
                 {
                   key: 'arr[]',
-                  title: 'Item {{idx}}'
+                  title: 'Item <<idx>>'
                 }
               ]
             }
@@ -85,7 +85,7 @@ var tests = [
           items: {
             type: 'string',
             title: 'Array item',
-            'default': 'Hey dude'
+            'default': 'Hey dude <<idx>>'
           }
         }
       },
@@ -95,11 +95,11 @@ var tests = [
           items: [
             {
               type: 'fieldset',
-              title: 'Number {{idx}}',
+              title: 'Number <<idx>>',
               items: [
                 {
                   key: 'arr[]',
-                  title: 'Item {{idx}}'
+                  title: 'Item <<idx>>'
                 }
               ]
             }
@@ -109,6 +109,10 @@ var tests = [
     }
   },
   {
+    /*
+    2018-07-24 Coridyn
+    This one currently isn't working - we just end up with a single empty array item.
+    */
     name: 'Default array',
     jsonform: {
       schema: {
@@ -147,13 +151,13 @@ var tests = [
           items: [
             {
               type: 'fieldset',
-              title: 'Number {{idx}}',
-              legend: '{{idx}}. {{value}}',
+              title: 'Number <<idx>>',
+              legend: '<<idx>>. <<value>>',
               items: [
                 {
                   key: 'arr[]',
-                  title: 'Item {{idx}}',
-                  value: 'Hello number {{idx}}',
+                  title: 'Item <<idx>>',
+                  value: 'Hello number <<idx>>',
                   valueInLegend: true
                 }
               ]
@@ -164,3 +168,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'array');

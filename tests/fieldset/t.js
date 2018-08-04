@@ -136,3 +136,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'fieldset');

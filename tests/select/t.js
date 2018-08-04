@@ -166,3 +166,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'select');

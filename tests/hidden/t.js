@@ -17,3 +17,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'hidden');

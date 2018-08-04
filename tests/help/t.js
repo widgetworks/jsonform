@@ -11,3 +11,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'help');

@@ -22,3 +22,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'number');

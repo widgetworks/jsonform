@@ -16,3 +16,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'template');

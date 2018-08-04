@@ -30,3 +30,5 @@ var tests = [
     }
   }
 ];
+
+addTests(tests, 'color');

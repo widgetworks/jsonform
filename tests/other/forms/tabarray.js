@@ -26,7 +26,7 @@ $("#testform").jsonForm({
       "items": [
         {
           "type": "fieldset",
-          "legend": "{{idx}}",
+          "legend": "<<idx>>",
           "items": [
             "tabs[].name"
           ]
