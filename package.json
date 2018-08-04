@@ -13,7 +13,7 @@
     "ts": "tsc -p src/tsconfig.json",
     "declaration": "tsc --emitDeclarationOnly -p src/tsconfig.json",
     "wp": "webpack --mode development",
-    "wpw": "webpack -c webpack.config.js --watch",
+    "wpw": "webpack --mode development --watch",
     "tsw": "npm run ts -- --watch"
   },
   "disabledScripts": {
@@ -43,6 +43,7 @@
   "devDependencies": {
     "concurrently": "^2.2.0",
     "copyfiles": "^1.0.0",
+    "lodash": "^4.17.10",
     "mkdirp": "^0.5.1",
     "source-map-loader": "^0.2.3",
     "ts-loader": "^4.2.0",
@@ -52,8 +53,7 @@
   },
   "dependencies": {
     "jquery": "^3.3.1",
-    "json-stringify-safe": "^5.0.1",
-    "lodash": "^3.10.1"
+    "json-stringify-safe": "^5.0.1"
   },
   "disabledDependencies": {
     "dom-compare": "^0.2.1",

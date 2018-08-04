@@ -712,7 +712,8 @@ export class FormNode implements IControlListener {
                 if (_.isString(propVal)) {
                     propVal = applyInterpOrArrayPath(propVal, self.arrayPath);
                     if (propVal) {
-                        propVal = _.template(propVal, formData, util.valueTemplateSettings);
+                        // propVal = _.template(propVal, formData, util.valueTemplateSettings);
+                        propVal = util._template(propVal, formData, util.valueTemplateSettings);
                     }
                 }
                 self[prop] = propVal;
@@ -727,7 +728,8 @@ export class FormNode implements IControlListener {
                     if (_.isObject(option) && option.title) {
                         
                         let titleValue = applyInterpOrArrayPath(option.title, self.arrayPath);
-                        titleValue = _.template(titleValue, formData, util.valueTemplateSettings);
+                        // titleValue = _.template(titleValue, formData, util.valueTemplateSettings);
+                        titleValue = util._template(titleValue, formData, util.valueTemplateSettings);
                         
                         resultOption = _.extend(
                             {},
@@ -786,7 +788,8 @@ export class FormNode implements IControlListener {
                         if (_.isString(_valueDefault)) {
                             _valueDefault = applyInterpOrArrayPath(_valueDefault, this.arrayPath);
                             if (_valueDefault) {
-                                _valueDefault = _.template(_valueDefault, formData, util.valueTemplateSettings);
+                                // _valueDefault = _.template(_valueDefault, formData, util.valueTemplateSettings);
+                                _valueDefault = util._template(_valueDefault, formData, util.valueTemplateSettings);
                             }
                         }
                         

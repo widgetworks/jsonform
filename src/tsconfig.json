@@ -12,7 +12,7 @@
         "baseUrl": ".",
 		
 		"declaration": true,
-		"declarationDir": "../DIR_FOR_TYPES/types",
+		"declarationDir": "../types",
 		
 		"rootDir": ".",
         "module": "es2015",
