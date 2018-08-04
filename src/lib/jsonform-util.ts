@@ -65,10 +65,15 @@ export var fieldTemplateSettings = {
 
 /**
  * Template settings for value replacement
+ * 
+ * 2018-07-22 Coridyn
+ * Change jsonform interpolation characters from '{{ }}' to '<< >>'
+ * to avoid clashes with AngularJS interpolation characters that
+ * we want to have (e.g. in our 'default' values)
  */
 export var valueTemplateSettings = {
     evaluate: /\{\[([\s\S]+?)\]\}/g,
-    interpolate: /\{\{([\s\S]+?)\}\}/g
+    interpolate : /<<([\s\S]+?)>>/g
 };
 
 export var _template = typeof _.template('', {}) === 'string' ? _.template : function(tmpl, data, opts) {
@@ -265,6 +270,57 @@ export function setObjKey(obj, key, value) {
         innerobj[prop] = value;
     }
 };
+    
+    
+/**
+ * Coridyn 2017-03-10
+ * 
+ * Normalise jsonschema types to a standard representation.
+ * 
+ * Mainly used for handling arrays of element types (e.g. type: ['string', 'number']
+ * 
+ * Examples:
+ * 
+ * 'string' => 'string'
+ * ['string'] => 'string'
+ * ['string', 'number'] => 'number,string'
+ */
+export function normaliseType(type){
+    var arrayType = [].concat(type);
+    var result = arrayType.concat().sort().toString();
+    return result;
+}
+
+
+/**
+ * 2018-07-22 Coridyn
+ * 
+ * jsonform interpolation handling - refactored from previous implementation to 
+ * centralise the behaviour and remove duplicate code.
+ * 
+ * `hasInterp()` - Returns `true` if the jsonform schema is referencing other fields
+ * `normaliseInterp()` - Replace '<<values.>>' with '<<getValue(key)>>'
+ * `setupInterpContext()` - Adds common functions/data to the interpolation context so they
+ * can be accessed in lodash/underscore template functions. e.g. add function to escape HTML, etc.
+ * 
+ * Normalise jsonschema interpolation strings
+ */
+var _valuesRE = /<<\s*values\.([^>]+)>>/i;
+export function hasInterp(str: string){
+    // This label wants to use the value of another input field.
+    var result = _valuesRE.test(str);
+    return result;
+}
+export function normaliseInterp(str: string){
+    // Convert <<values.>> construct into <<getValue(key)>> for
+    // Underscore to call the appropriate function of formData
+    // when template gets called (note calling a function is not
+    // exactly Mustache-friendly but is supported by Underscore).
+    var result = str.replace(
+        /<<\s*values\.([^>]+)>>/g,
+        '<<getValue("$1")>>');
+    return result;
+}
 
 
 /**

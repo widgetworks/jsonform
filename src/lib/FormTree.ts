@@ -457,11 +457,31 @@ export class FormTree {
      * @function
      */
     buildTree() {
+        /*
+        2018-07-22 Coridyn
+        
+        TODO: Simplify this to map `this.formDesc.form` to a single consolidated list of IFormElement items
+        and only *then* run `buildFromLayout(...)` with each IFormElement
+        
+        TODO: Allow a template IFormElement glob `{key: '*', ...}` and merge those properties
+        over each IFormElement that we create
+        
+        e.g. this lets us pass `allowEmpty` on this top-level element and have it passed down to each child as well:
+        
+        {
+            key: '*',
+            allowEmpty: true
+        }
+       
+        test for: `formElement === '*' || formElement.key === '*'`
+        */
+        
+        
         // Parse and generate the form structure based on the elements encountered:
         // - '*' means "generate all possible fields using default layout"
         // - a key reference to target a specific data element
         // - a more complex object to generate specific form sections
-        _.each(this.formDesc.form, (formElement) => {
+        _.each(this.formDesc.form, (formElement/*: IFormElementOrString*/) => {
             if (formElement === '*') {
                 _.each(this.formDesc.schema.properties, (element, key: string) => {
                     if (this.formDesc.nonDefaultFormItems && this.formDesc.nonDefaultFormItems.indexOf(key) >= 0){
@@ -478,8 +498,7 @@ export class FormTree {
                         keyOnParent: key
                     }));
                 });
-            }
-            else {
+            } else {
                 if (_.isString(formElement)) {
                     formElement = {
                         key: formElement,
@@ -794,7 +813,16 @@ export class FormTree {
                 if (schemaElement.properties) {
                     formElement.type = 'fieldset';
                 } else {
-                    formElement.type = 'textarea';
+                    /**
+                     * 2017-01-13
+                     * Coridyn: previously this was set to 'textarea' which would
+                     * render as '[object Object]' and give validation error.
+                     * 
+                     * Swap to our new 'json' type to handle 
+                     */
+                    // formElement.type = 'textarea';
+                    
+                    formElement.type = 'json';
                 }
             } else if (!_.isUndefined(schemaElement['enum'])) {
                 formElement.type = 'select';

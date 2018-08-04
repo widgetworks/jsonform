@@ -45,6 +45,15 @@ export interface IFormElement extends IControlListener, IOtherField, IFormElemen
     description?: string;
     required?: boolean;
     
+    /**
+     * 2018-07-24 Coridyn
+     * Maps `enum` values to a user-formatted string.
+     * 
+     * See example: /tests/checkboxes/t.js
+     */
+    titleMap?: {[value: string]: string};
+    
+    
     readOnly?: boolean;
     'readonly'?: boolean; // For backward compatibility only. Use `readOnly` instead.
     

@@ -8,7 +8,7 @@ import {
     IFormElement,
     ISchemaElement,
     ITemplate,
-    IOption,
+    IOption, IFormElementOrString,
 } from "./types/types";
 import {FormTree} from "./FormTree";
 import {IHandlerMap, INodeEventHandler} from "./types/Events";
@@ -707,55 +707,40 @@ export class FormNode implements IControlListener {
                 'placeholder',
                 'readOnly'
             ], (prop) => {
-                if (_.isString(this.formElement[prop])) {
-                    if (this.formElement[prop].indexOf('{{values.') !== -1) {
-                        // This label wants to use the value of another input field.
-                        // Convert that construct into {{jsonform.getValue(key)}} for
-                        // Underscore to call the appropriate function of formData
-                        // when template gets called (note calling a function is not
-                        // exactly Mustache-friendly but is supported by Underscore).
-                        this[prop] = this.formElement[prop].replace(
-                            /\{\{values\.([^\}]+)\}\}/g,
-                            '{{getValue("$1")}}');
-                    }
-                    else {
-                        // Note applying the array path probably doesn't make any sense,
-                        // but some geek might want to have a label "foo[].bar[].baz",
-                        // with the [] replaced by the appropriate array path.
-                        this[prop] = applyArrayPath(this.formElement[prop], this.arrayPath);
-                    }
-                    if (this[prop]) {
-                        this[prop] = util._template(this[prop], formData, util.valueTemplateSettings);
+                
+                var propVal = self.formElement[prop];
+                if (_.isString(propVal)) {
+                    propVal = applyInterpOrArrayPath(propVal, self.arrayPath);
+                    if (propVal) {
+                        propVal = _.template(propVal, formData, util.valueTemplateSettings);
                     }
                 }
-                else {
-                    this[prop] = this.formElement[prop];
-                }
+                self[prop] = propVal;
+                
             });
 
             // Apply templating to options created with "titleMap" as well
             if (this.formElement.options) {
-                this.options = _.map(this.formElement.options, function(option) {
-                    var title = null;
+                this.options = _.map(this.formElement.options, (option: IOption): IOption => {
+                    
+                    let resultOption: IOption = option;
                     if (_.isObject(option) && option.title) {
-                        // See a few lines above for more details about templating
-                        // preparation here.
-                        if (option.title.indexOf('{{values.') !== -1) {
-                            title = option.title.replace(
-                                /\{\{values\.([^\}]+)\}\}/g,
-                                '{{getValue("$1")}}');
-                        }
-                        else {
-                            title = applyArrayPath(option.title, self.arrayPath);
-                        }
-                        return _.extend({}, option, {
-                            value: (util.isSet(option.value) ? option.value : ''),
-                            title: util._template(title, formData, util.valueTemplateSettings)
-                        });
+                        
+                        let titleValue = applyInterpOrArrayPath(option.title, self.arrayPath);
+                        titleValue = _.template(titleValue, formData, util.valueTemplateSettings);
+                        
+                        resultOption = _.extend(
+                            {},
+                            option,
+                            {
+                                value: option.value || '',
+                                title: titleValue
+                            }
+                        );
                     }
-                    else {
-                        return option;
-                    }
+                    
+                    return resultOption;
+                    
                 });
             }
         }
@@ -784,7 +769,7 @@ export class FormNode implements IControlListener {
             }
             
             /**
-             * CFH: Set the default value if no value was retrieved above 
+             * Coridyn: Set the default value if no value was retrieved above 
              */
             if (!ignoreDefaultValues) {
                 // No previously submitted form result, use default value
@@ -796,28 +781,16 @@ export class FormNode implements IControlListener {
                     //      level(e.g. when handle new itemn for array)
                     var schemaDefault = getSchemaDefaultByKeyWithArrayIdx(self.ownerTree.formDesc.schema, this.key, topDefaultArrayLevel);
                     if (util.isSet(schemaDefault)) {
-                        this.value = schemaDefault;
-                        if (_.isString(this.value)) {
-                            if (this.value.indexOf('{{values.') !== -1) {
-                                // This label wants to use the value of another input field.
-                                // Convert that construct into {{jsonform.getValue(key)}} for
-                                // Underscore to call the appropriate function of formData
-                                // when template gets called (note calling a function is not
-                                // exactly Mustache-friendly but is supported by Underscore).
-                                this.value = this.value.replace(
-                                    /\{\{values\.([^\}]+)\}\}/g,
-                                    '{{getValue("$1")}}');
-                            }
-                            else {
-                                // Note applying the array path probably doesn't make any sense,
-                                // but some geek might want to have a label "foo[].bar[].baz",
-                                // with the [] replaced by the appropriate array path.
-                                this.value = applyArrayPath(this.value, this.arrayPath);
-                            }
-                            if (this.value) {
-                                this.value = util._template(this.value, formData, util.valueTemplateSettings);
+                        
+                        let _valueDefault = schemaDefault;
+                        if (_.isString(_valueDefault)) {
+                            _valueDefault = applyInterpOrArrayPath(_valueDefault, this.arrayPath);
+                            if (_valueDefault) {
+                                _valueDefault = _.template(_valueDefault, formData, util.valueTemplateSettings);
                             }
                         }
+                        
+                        this.value = _valueDefault;
                         this.defaultValue = true;
                     }
                 }
@@ -951,6 +924,10 @@ export class FormNode implements IControlListener {
 
             // Skip the input field if it's not part of the schema
             if (!eltSchema) continue;
+            
+            // 2017-03-10: Handle arrays of schema types.
+            var eltSchemaType = util.normaliseType(eltSchema.type);
+            
 
             // Handle multiple checkboxes separately as the idea is to generate
             // an array that contains the list of enumeration items that the user
@@ -991,7 +968,7 @@ export class FormNode implements IControlListener {
             if (name.slice(-2) === '[]') {
                 name = name.slice(0, -2);
                 eltSchema = util.getSchemaKey(formSchema.properties, name);
-                if (eltSchema.type === 'array') {
+                if (eltSchemaType === 'array') {
                     cval = util.getObjKey(values, name) || [];
                     if (cval.indexOf(formArray[i].value) < 0) {
                         cval.push(formArray[i].value);
@@ -1002,7 +979,7 @@ export class FormNode implements IControlListener {
             }
 
             // Type casting
-            if (eltSchema.type === 'boolean') {
+            if (eltSchemaType === 'boolean') {
                 if (formArray[i].value === '0' || formArray[i].value === 'false') {
                     formArray[i].value = false;
                 } else if (formArray[i].value === '') {
@@ -1011,8 +988,9 @@ export class FormNode implements IControlListener {
                     formArray[i].value = !!formArray[i].value;
                 }
             }
-            if ((eltSchema.type === 'number') ||
-                (eltSchema.type === 'integer')) {
+            if ((eltSchemaType === 'number') ||
+                (eltSchemaType === 'integer') ||
+                (eltSchemaType === 'number,string')) {
                 if (_.isString(formArray[i].value)) {
                     if (!formArray[i].value.length) {
                         formArray[i].value = null;
@@ -1021,12 +999,12 @@ export class FormNode implements IControlListener {
                     }
                 }
             }
-            if ((eltSchema.type === 'string') &&
+            if ((eltSchemaType === 'string') &&
                 (formArray[i].value === '') &&
                 !eltSchema._jsonform_allowEmpty) {
                 formArray[i].value = null;
             }
-            if ((eltSchema.type === 'object') &&
+            if ((eltSchemaType === 'object') &&
                 _.isString(formArray[i].value) &&
                 (formArray[i].value.substring(0, 1) === '{')) {
                 try {
@@ -1035,7 +1013,7 @@ export class FormNode implements IControlListener {
                     formArray[i].value = {};
                 }
             }
-            if ((eltSchema.type === 'array') && _.isString(formArray[i].value)) {
+            if ((eltSchemaType === 'array') && _.isString(formArray[i].value)) {
                 if (formArray[i].value.substring(0, 1) === '[') {
                     try {
                         formArray[i].value = JSON.parse(formArray[i].value);
@@ -1046,9 +1024,19 @@ export class FormNode implements IControlListener {
                 else
                     formArray[i].value = null;
             }
+            
             //TODO is this due to a serialization bug?
-            if ((eltSchema.type === 'object') &&
-                (formArray[i].value === 'null' || formArray[i].value === '')) {
+            /**
+             * 2017-01-13
+             * Special handling for object type that gets rendered as a string.
+             * 
+             * `formNode.prototype.generate()` will convert `null` values to an empty string,
+             * which stuffs up the `data -> editor -> data` round-trip.
+             * 
+             * Coerce "null", "", or '""' to a null object.
+             */
+            if ((eltSchemaType === 'object') &&
+                (formArray[i].value === 'null' || formArray[i].value === '' || formArray[i].value === '""')) {
                 formArray[i].value = null;
             }
 
@@ -1715,27 +1703,6 @@ export function getInitialValue(
         return getInitialValue(formDesc, key, arrayPath, tpldata, usePreviousValues);
     };
 
-    // Helper function that returns the form element that explicitly
-    // references the given key in the schema.
-    var getFormElement = function(elements, key) {
-        var formElement = null;
-        if (!elements || !elements.length) return null;
-        _.each(elements, function(elt) {
-            if (formElement) return;
-            if (elt === key) {
-                formElement = { key: elt };
-                return;
-            }
-            if (_.isString(elt)) return;
-            if (elt.key === key) {
-                formElement = elt;
-            }
-            else if (elt.items) {
-                formElement = getFormElement(elt.items, key);
-            }
-        });
-        return formElement;
-    };
     var formElement = getFormElement(formDesc.form || [], key);
     var schemaElement = util.getSchemaKey(formDesc.schema.properties, key);
 
@@ -1756,16 +1723,12 @@ export function getInitialValue(
                 value = schemaElement['default'];
             }
         }
-        if (value && value.indexOf('{{values.') !== -1) {
+        
+        if (util.hasInterp(value)) {
             // This label wants to use the value of another input field.
-            // Convert that construct into {{getValue(key)}} for
-            // Underscore to call the appropriate function of formData
-            // when template gets called (note calling a function is not
-            // exactly Mustache-friendly but is supported by Underscore).
-            value = value.replace(
-                /\{\{values\.([^\}]+)\}\}/g,
-                '{{getValue("$1")}}');
+            value = util.normaliseInterp(value);
         }
+        
         if (value) {
             value = util._template(value, tpldata, util.valueTemplateSettings);
         }
@@ -1774,8 +1737,7 @@ export function getInitialValue(
     // TODO: handle on the formElement.options, because user can setup it too.
     // Apply titleMap if needed
     if (util.isSet(value) && formElement && util.hasOwnProperty(formElement.titleMap, value)) {
-        value = util._template(formElement.titleMap[value],
-            tpldata, util.valueTemplateSettings);
+        value = util._template(formElement.titleMap[value], tpldata, util.valueTemplateSettings);
     }
 
     // Check maximum length of a string
@@ -1796,6 +1758,48 @@ export function getInitialValue(
 }
 
 
+// Helper function that returns the form element that explicitly
+// references the given key in the schema.
+function getFormElement(elements: IFormElementOrString[], key: string): IFormElement {
+    var formElement = null;
+    if (!elements || !elements.length) return null;
+    _.each(elements, function(elt) {
+        if (formElement) return;
+        if (elt === key) {
+            formElement = { key: elt };
+            return;
+        }
+        if (_.isString(elt)) return;
+        if (elt.key === key) {
+            formElement = elt;
+        } else if (elt.items) {
+            formElement = getFormElement(elt.items, key);
+        }
+    });
+    return formElement;
+}
+
+
+/**
+ * Remove duplicate code and implement common behaviour to set up 
+ * underscore interpolation or apply an array path to the given value.
+ */
+export function applyInterpOrArrayPath(value: string, arrayPath: number[]){
+    var result = value;
+    if (util.hasInterp(value)){
+        // This label wants to use the value of another input field.
+        result = util.normaliseInterp(value);
+    } else {
+        // Note applying the array path probably doesn't make any sense,
+        // but some geek might want to have a label "foo[].bar[].baz",
+        // with the [] replaced by the appropriate array path.
+        result = applyArrayPath(value, arrayPath);
+    }
+    
+    return result;
+}
+
+
 /**
  * Applies the array path to the key path.
  *
@@ -1810,7 +1814,7 @@ export function getInitialValue(
  * @param {Array(Number)} arrayPath The array path to apply, e.g. [4, 2]
  * @return {String} The path to the key that matches the array path.
  */
-export function applyArrayPath(key, arrayPath) {
+export function applyArrayPath(key: string, arrayPath: number[]) {
     var depth = 0;
     if (!key) return null;
     if (!arrayPath || (arrayPath.length === 0)) return key;
