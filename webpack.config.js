@@ -14,7 +14,7 @@ function resolve(){
 
 let paths = {
     context: resolve(__dirname, `src`),
-    output: resolve(__dirname, `build`),
+    output: resolve(__dirname, `dist`),
 };
 
 
@@ -33,6 +33,7 @@ module.exports = (env) => {
         output: {
             path: paths.output,
             filename: '[name].js',
+            libraryTarget: 'umd',
         },
         externals: {
             /*
@@ -47,14 +48,21 @@ module.exports = (env) => {
             */
             
             // import 'jquery' => will return global jQuery variable
-            'jquery': 'jQuery',
-            'lodash': '_',
+            'jquery': {
+                commonjs: 'jquery',
+                commonjs2: 'jquery',
+                amd: 'jquery',
+                root: 'jQuery',
+            },
+            'lodash': {
+                commonjs: 'lodash',
+                commonjs2: 'lodash',
+                amd: 'lodash',
+                root: '_',
+            },
         },
         resolve: {
             extensions: ['.js', '.ts'],
-            modules: [
-                "node_modules"
-            ],
             alias: {
                 // Use the full build of vue including template compiler
                 // 'vue$': 'vue/dist/vue.common.js'
@@ -65,7 +73,9 @@ module.exports = (env) => {
             assets: false,
             modules: false,
         },
-        devtool: env.production ? 'source-map' : 'inline-source-map',
+        // devtool: env.production ? 'source-map' : 'inline-source-map',
+        // devtool: 'source-map',
+        devtool: 'inline-source-map',
         plugins: [
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': JSON.stringify(NODE_ENV),
@@ -74,7 +84,13 @@ module.exports = (env) => {
         module: {
             rules: [
                 {
-                    test: /\.ts$/,
+                    test: /\.js$/,
+                    use: ['source-map-loader'],
+                    enforce: 'pre',
+                    // include: /@wiwo\/jsonform/
+                },
+                {
+                    test: /\.tsx?$/,
                     loader: 'ts-loader',
                     query: {
                         configFile: resolve(__dirname, 'src/tsconfig.json'),
