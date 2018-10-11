@@ -20,6 +20,12 @@
             content: ' *';
             color: red;
         }
+        
+        .group-wrapper + .group-wrapper {
+            border-top: 5px solid black;
+            margin-top: 50px;
+            padding-top: 50px;
+        }
     </style>
 </head>
 
@@ -29,7 +35,10 @@
     </div>
     
     <script src="../deps/jquery.min.js"></script>
-    <script src="../deps/underscore.js"></script>
+    
+    <!--<script src="../deps/underscore.js"></script>-->
+    <script src="../node_modules/lodash/lodash.js"></script>
+    
     <script src="../deps/opt/jquery.ui.core.js"></script>
     <script src="../deps/opt/jquery.ui.widget.js"></script>
     <script src="../deps/opt/jquery.ui.mouse.js"></script>
@@ -57,18 +66,22 @@
     </script>
     
     
-    <script src="text/t.js"></script>
-    <script src="value/t.js"></script>
-    <script src="array/t.js"></script>
+    <!--<script src="_wiwo/json/t.js"></script>-->
+    <script src="_wiwo/tablearray/t.js"></script>
+    
+    <!--<script src="text/t.js"></script>-->
+    <!--<script src="value/t.js"></script>-->
+    <!--<script src="array/t.js"></script>-->
     
     <!--<script src="ace/t.js"></script>-->
+    
     <!--<script src="actions/t.js"></script>-->
     <!--<script src="array/t.js"></script>-->
     <!--<script src="checkbox/t.js"></script>-->
     <!--<script src="checkboxes/t.js"></script>-->
     <!--<script src="color/t.js"></script>-->
     <!--<script src="fieldset/t.js"></script>-->
-    <!--<script src="file/t.js"></script>-->
+    <!--&lt;!&ndash;<script src="file/t.js"></script>&ndash;&gt;-->
     <!--<script src="help/t.js"></script>-->
     <!--<script src="hidden/t.js"></script>-->
     <!--<script src="i18n/t.js"></script>-->

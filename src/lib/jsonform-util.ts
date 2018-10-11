@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import {TemplateOptions} from 'lodash'
 
 import {
     ISchemaElement,
@@ -76,9 +77,11 @@ export var valueTemplateSettings = {
     interpolate : /<<([\s\S]+?)>>/g
 };
 
-export var _template = typeof _.template('', {}) === 'string' ? _.template : function(tmpl, data, opts) {
-    return _.template(tmpl, opts)(data);
-}
+export var _template: (tmpl: string, data: any, opts?: TemplateOptions) => string = typeof _.template('', {}) === 'string' ? 
+    <any>_.template : 
+    function(tmpl, data, opts) {
+        return _.template(tmpl, opts)(data);
+    };
 
 /**
  * Returns true if given property is directly property of an object

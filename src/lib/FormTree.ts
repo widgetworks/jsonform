@@ -1,5 +1,5 @@
-import $ from 'jquery';
 import _ from 'lodash';
+import $ from 'jquery';
 
 import global from './global';
 import * as classes from './formclasses';
@@ -141,6 +141,15 @@ export class FormTree {
         // (for arrays, the computation actually creates the form nodes)
         this.computeInitialValues();
     }
+    
+    
+    /**
+     * 
+     * @private
+     */
+    _processSchema(){
+        
+    }
 
 
     /**
@@ -149,7 +158,7 @@ export class FormTree {
      * 
      * @private
      */
-    _normaliseRootSchema(rootSchema){
+    _normaliseRootSchema(rootSchema: any = {}){
         if (!rootSchema){
             return rootSchema;
         }
@@ -567,7 +576,7 @@ export class FormTree {
             // with a schema element.
             var a = true;
         }
-
+        
         formElement.type = formElement.type || 'text';
         view = elementTypes[formElement.type];
         if (!view) {
@@ -795,6 +804,13 @@ export class FormTree {
 
         // If the form element does not define its type, use the type of
         // the schema element.
+        
+        /**
+         * 2017-03-10
+         * Handle compound data types.
+         */
+        var schemaElementType = util.normaliseType(schemaElement.type);
+        
         if (!formElement.type) {
             if ((schemaElement.type === 'string') &&
                 (schemaElement.format === 'color')) {
@@ -803,8 +819,11 @@ export class FormTree {
                 schemaElement.type === 'integer') &&
                 !schemaElement['enum']) {
                 formElement.type = 'number';
-            } else if ((schemaElement.type === 'string' ||
-                schemaElement.type === 'any') &&
+            } else if ((schemaElement.type === 'number' ||
+                schemaElement.type === 'integer' ||
+                schemaElement.type === 'string' ||
+                schemaElement.type === 'any' ||
+                schemaElementType === 'number,string') &&
                 !schemaElement['enum']) {
                 formElement.type = 'text';
             } else if (schemaElement.type === 'boolean') {
@@ -892,7 +911,7 @@ export class FormTree {
     _prepareOptions(formElement, enumValues?: any[]) {
         if (formElement.options) {
             if (Array.isArray(formElement.options)) {
-                formElement.options = formElement.options.map(function(value) {
+                formElement.options = formElement.options.map((value) => {
                     return util.hasOwnProperty(value, 'value') ? value : {
                         value: value,
                         title: value
@@ -901,7 +920,7 @@ export class FormTree {
             }
             else if (typeof formElement.options === 'object') {
                 // titleMap like options
-                formElement.options = Object.keys(formElement.options).map(function(value) {
+                formElement.options = Object.keys(formElement.options).map((value) => {
                     return {
                         value: value,
                         title: formElement.options[value]
@@ -910,7 +929,7 @@ export class FormTree {
             }
         }
         else if (formElement.titleMap) {
-            formElement.options = _.map(enumValues, function(value) {
+            formElement.options = _.map(enumValues, (value) => {
                 var title = value.toString();
                 return {
                     value: value,
@@ -919,7 +938,7 @@ export class FormTree {
             });
         }
         else {
-            formElement.options = enumValues.map(function(value) {
+            formElement.options = enumValues.map((value) => {
                 return {
                     value: value,
                     title: value.toString()

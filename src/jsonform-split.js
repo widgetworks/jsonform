@@ -105,7 +105,7 @@
       if (!referencedKey) {
         return false;
       }
-      return _.include(keys, referencedKey) ||
+      return _.includes(keys, referencedKey) ||
         !!_.find(keys, function (key) {
           return (referencedKey.indexOf(key + '.') === 0) ||
             (referencedKey.indexOf(key + '[]') === 0);
@@ -132,7 +132,7 @@
       if (!referencedKey) {
         return false;
       }
-      return !_.include(keys, referencedKey) &&
+      return !_.includes(keys, referencedKey) &&
         !_.find(keys, function (key) {
           return (referencedKey.indexOf(key + '.') === 0) ||
             (referencedKey.indexOf(key + '[]') === 0);

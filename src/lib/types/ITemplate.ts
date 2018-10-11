@@ -7,6 +7,11 @@ export interface EventLike {
 }
 
 
+export interface ITemplateMap {
+    [type:string]: ITemplate,
+}
+
+
 /**
  * ITemplate
  * 

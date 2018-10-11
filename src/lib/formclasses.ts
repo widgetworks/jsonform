@@ -1,4 +1,5 @@
 import _ from 'lodash';
+
 import {IFormClasses} from "./types/IFormClasses";
 
 export var _bs2Classes: IFormClasses = {

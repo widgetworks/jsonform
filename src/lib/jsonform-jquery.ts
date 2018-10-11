@@ -1,5 +1,5 @@
-import $ from 'jquery';
 import _ from 'lodash';
+import $ from 'jquery';
 
 import {IFormDescriptor} from "./types/IFormDescriptor";
 import {FormTree} from "./FormTree";

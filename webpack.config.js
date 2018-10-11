@@ -33,6 +33,9 @@ module.exports = (env) => {
         output: {
             path: paths.output,
             filename: '[name].js',
+            
+            // When loaded as a script, make available globally as `jsonForm` variable
+            library: 'jsonForm',
             libraryTarget: 'umd',
         },
         externals: {
@@ -48,16 +51,30 @@ module.exports = (env) => {
             */
             
             // import 'jquery' => will return global jQuery variable
+            '$': {
+                commonjs: 'jquery',
+                commonjs2: 'jquery',
+                amd: 'jquery',
+                root: 'jQuery',
+            },
             'jquery': {
                 commonjs: 'jquery',
                 commonjs2: 'jquery',
                 amd: 'jquery',
                 root: 'jQuery',
             },
+            
+            // Point lodash to underscore
             'lodash': {
-                commonjs: 'lodash',
-                commonjs2: 'lodash',
-                amd: 'lodash',
+                commonjs: 'underscore',
+                commonjs2: 'underscore',
+                amd: 'underscore',
+                root: '_',
+            },
+            'underscore': {
+                commonjs: 'underscore',
+                commonjs2: 'underscore',
+                amd: 'underscore',
                 root: '_',
             },
         },
@@ -74,8 +91,8 @@ module.exports = (env) => {
             modules: false,
         },
         // devtool: env.production ? 'source-map' : 'inline-source-map',
-        // devtool: 'source-map',
-        devtool: 'inline-source-map',
+        devtool: 'source-map',
+        // devtool: 'inline-source-map',
         plugins: [
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': JSON.stringify(NODE_ENV),

@@ -124,7 +124,7 @@ export interface IFormDescriptor {
     /**
      * Event callbacks
      */
-    // Invoke callback when any form element is rendered.
+    // Invoke callback just before *any* form element is rendered.
     // Allows global manipulation of elements as they are rendered. 
     onBeforeRender?: (data: IRenderData, node: FormNode) => void;
     onInsert?: (event: EventLike, node: FormNode) => void;

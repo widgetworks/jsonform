@@ -3,7 +3,7 @@
 import * as util from "./lib/jsonform-util";
 
 import elementTypes from './templates/templates';
-import {fieldTemplate} from './templates/_base';
+import fieldTemplate from './templates/_fieldTemplate';
 import {getInitialValue} from './lib/FormNode';
 
 import {getFormValue} from './lib/jsonform-jquery';

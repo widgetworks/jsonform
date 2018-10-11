@@ -1,5 +1,6 @@
-import $ from 'jquery';
 import _ from 'lodash';
+
+import $ from 'jquery';
 
 import * as util from "./jsonform-util";
 
@@ -16,9 +17,7 @@ import {IJsonSchemaAny} from "./types/ISchemaElement";
 import {IRenderData} from "./types/IRenderData";
 import {IFormDescriptor, IFormTemplateData} from "./types/IFormDescriptor";
 
-import {
-    fieldTemplate as wrapFieldTemplate
-} from "../templates/_base";
+import wrapFieldTemplate from "../templates/_fieldTemplate";
 
 
 /**
@@ -271,7 +270,7 @@ export class FormNode implements IControlListener {
         node.formElement = this.formElement;
         node.schemaElement = this.schemaElement;
         node.view = this.view;
-        node.children = _.map(this.children, function(child) {
+        node.children = _.map(this.children, (child) => {
             return child.clone(node);
         });
         /*  if (this.childTemplate) {
@@ -305,7 +304,7 @@ export class FormNode implements IControlListener {
         if (this.value && !this.defaultValue) {
             return true;
         }
-        var child = _.find(this.children, function(child) {
+        var child = _.find(this.children, (child) => {
             return child.hasNonDefaultValue();
         });
         return !!child;
@@ -513,11 +512,11 @@ export class FormNode implements IControlListener {
             // Simple input field, extract the value from the origin,
             // set the target value and reset the origin value
             params = $(':input', this.el).serializeArray();
-            _.each(params, function(param) {
+            _.each(params, (param) => {
                 // TODO: check this, there may exist corner cases with this approach
                 // (with multiple checkboxes for instance)
                 $('[name="' + util.escapeSelector(param.name) + '"]', $(this.el)).val('');
-            }, this);
+            });
         }
         else if (this.view && this.view.array) {
             // The current node is an array, drop all children
@@ -1375,11 +1374,11 @@ export class FormNode implements IControlListener {
                 handler({ target: $(this.el) }, this);
             }
             if (handlers) {
-                _.each(handlers, function(handler, onevent) {
+                _.each(handlers, (handler, onevent) => {
                     if (onevent === 'insert') {
                         handler({ target: $(this.el) }, this);
                     }
-                }, this);
+                });
             }
 
             // No way to register event handlers if the DOM element is unknown
@@ -1410,11 +1409,11 @@ export class FormNode implements IControlListener {
                     $(this.el).bind('keyup', function(evt) { node.formElement.onKeyUp(evt, node); });
 
                 if (handlers) {
-                    _.each(handlers, function(handler, onevent) {
+                    _.each(handlers, (handler, onevent) => {
                         if (onevent !== 'insert') {
                             $(this.el).bind(onevent, function(evt) { handler(evt, node); });
                         }
-                    }, this);
+                    });
                 }
             }
 
@@ -1430,7 +1429,7 @@ export class FormNode implements IControlListener {
         }
 
         // Recurse down the tree to enhance children
-        _.each(this.children, function(child) {
+        _.each(this.children, (child) => {
             child.enhance();
         });
     }
